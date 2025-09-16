@@ -1,0 +1,310 @@
+// Prisma schema for Supabase integration
+// This schema is based on the project's TypeScript types and sample data
+// Adjust field types and relations as needed for your Supabase setup
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("SUPABASE_DB_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  clerkUserId String @unique
+  email     String   @unique
+  name      String
+  role      Role
+  createdAt DateTime @default(now())
+  athletes  Athlete[]
+  coaches   Coach[]
+  academies Academy[]
+  sponsors  Sponsor[]
+  notifications Notification[]
+  trainingProviders TrainingProvider[]
+}
+
+enum Role {
+  athlete
+  coach
+  academy
+  sponsor
+}
+
+model Athlete {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  sport     String
+  region    String
+  level     Level
+  badges    AthleteBadge[]
+  academyId String?
+  academy   Academy? @relation(fields: [academyId], references: [id])
+  coachId   String?
+  coach     Coach?   @relation("CoachAthletes", fields: [coachId], references: [id])
+  profileImage String?
+  age       Int?
+  bio       String?
+  trainingPlans TrainingPlan[]
+  progress  AthleteProgress[]
+  registrations TournamentRegistration[]
+  tournamentWinners TournamentWinner[]
+}
+
+enum Level {
+  Beginner
+  Intermediate
+  Pro
+}
+
+model Coach {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  sport     String
+  experience Int
+  academyId String?
+  academy   Academy? @relation(fields: [academyId], references: [id])
+  profileImage String?
+  bio       String?
+  specialization String?
+  athletes  Athlete[] @relation("CoachAthletes")
+  trainingPlans TrainingPlan[]
+  athleteProgress AthleteProgress[]
+}
+
+model Academy {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  location  String
+  city      String
+  state     String
+  sports    String[]
+  description String?
+  facilities String[]
+  establishedYear Int?
+  contactEmail String?
+  contactPhone String?
+  profileImage String?
+  athletes  Athlete[]
+  coaches   Coach[]
+  tournaments Tournament[]
+}
+
+model Badge {
+  id        String   @id @default(uuid())
+  name      String
+  description String
+  icon      String
+  category  BadgeCategory
+  rarity    BadgeRarity
+  athleteBadges AthleteBadge[]
+}
+
+enum BadgeCategory {
+  achievement
+  skill
+  participation
+  special
+}
+
+enum BadgeRarity {
+  common
+  rare
+  epic
+  legendary
+}
+
+model AthleteBadge {
+  id        String   @id @default(uuid())
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+  athleteId String
+  badge     Badge   @relation(fields: [badgeId], references: [id])
+  badgeId   String
+}
+
+model Tournament {
+  id        String   @id @default(uuid())
+  name      String
+  sport     String
+  location  String
+  startDate DateTime
+  endDate   DateTime
+  registrationDeadline DateTime
+  maxParticipants Int
+  currentParticipants Int
+  academyId String
+  academy   Academy  @relation(fields: [academyId], references: [id])
+  academyName String
+  description String?
+  eligibilityLevel TournamentLevel
+  prizePool  String?
+  status     TournamentStatus
+  registrations TournamentRegistration[]
+  winners   TournamentWinner[]
+}
+
+enum TournamentLevel {
+  Beginner
+  Intermediate
+  Pro
+  All
+}
+
+enum TournamentStatus {
+  upcoming
+  ongoing
+  completed
+}
+
+model TournamentRegistration {
+  id        String   @id @default(uuid())
+  tournamentId String
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+  registeredAt DateTime @default(now())
+  status     RegistrationStatus
+}
+
+enum RegistrationStatus {
+  registered
+  confirmed
+  cancelled
+}
+
+model Sponsor {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  company   String
+  industry  String
+  budget    String
+  sponsoredTournaments String[]
+  contactEmail String
+  description String?
+  logo      String?
+  tournamentWinners TournamentWinner[]
+}
+
+model TrainingPlan {
+  id        String   @id @default(uuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+  coachId   String
+  coach     Coach   @relation(fields: [coachId], references: [id])
+  title     String
+  description String
+  exercises  Exercise[]
+  duration   Int
+  createdAt  DateTime @default(now())
+  status     TrainingPlanStatus
+}
+
+enum TrainingPlanStatus {
+  active
+  completed
+  paused
+}
+
+model Exercise {
+  id        String   @id @default(uuid())
+  name      String
+  description String
+  sets      Int?
+  reps      Int?
+  duration  Int?
+  restTime  Int?
+  completed Boolean
+  trainingPlanId String
+  trainingPlan TrainingPlan @relation(fields: [trainingPlanId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  tournament
+  assignment
+  badge
+  general
+}
+
+model AthleteProgress {
+  id        String   @id @default(uuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+  coachId   String
+  coach     Coach   @relation(fields: [coachId], references: [id])
+  speedImprovement Int
+  accuracyImprovement Int
+  lastTournamentPosition Int
+  lastUpdated DateTime @default(now())
+  notes     String?
+}
+
+model TournamentWinner {
+  id        String   @id @default(uuid())
+  tournamentId String
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+  position  Int
+  prize     String?
+  sponsorId String?
+  sponsor   Sponsor? @relation(fields: [sponsorId], references: [id])
+}
+
+model TrainingProvider {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  specialization String
+  experience Int
+  location   String
+  contactEmail String
+  bio        String?
+  programs   TrainingProgram[]
+}
+
+model TrainingProgram {
+  id        String   @id @default(uuid())
+  providerId String
+  provider   TrainingProvider @relation(fields: [providerId], references: [id])
+  providerName String
+  title     String
+  description String
+  sport     String
+  duration  Int
+  fees      String
+  location  String
+  maxParticipants Int
+  currentParticipants Int
+  startDate DateTime
+  schedule  String
+  level     TrainingProgramLevel
+}
+
+enum TrainingProgramLevel {
+  Beginner
+  Intermediate
+  Pro
+  All
+}
