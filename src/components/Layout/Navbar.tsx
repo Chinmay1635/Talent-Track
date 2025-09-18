@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { Trophy, Bell, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
@@ -8,7 +7,6 @@ import { useData } from '../../context/DataContext';
 const Navbar: React.FC = () => {
   const { user } = useAuth();
   const { notifications } = useData();
-  const router = useRouter();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
