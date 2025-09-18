@@ -8,7 +8,14 @@ import { useAuth } from '../../src/context/AuthContext';
 export default function AthleteProfilePage() {
   const { user } = useAuth();
   const { athletes } = useData();
-  const athlete = athletes.find(a => a.userId === user?.id);
+  const athleteList = Array.isArray(athletes) ? athletes : [];
+  const athlete = athleteList.find(a => {
+    if (!user?._id) return false;
+    if (a.userId === user._id) return true;
+    const populatedUser = (a as any).user;
+    if (populatedUser && typeof populatedUser === 'object' && populatedUser._id === user._id) return true;
+    return false;
+  });
   return (
     <ProtectedRoute allowedRoles={['athlete']}>
       <div className="min-h-screen bg-gray-50">

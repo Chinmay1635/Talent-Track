@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Trophy, Star, Calendar, User, Award } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
@@ -6,12 +6,50 @@ import { useData } from '../../context/DataContext';
 const AthleteProfile: React.FC = () => {
   const { user } = useAuth();
   const { athletes, coaches, academies, tournaments } = useData();
-
-  // Find the athlete data for the current user
-  const athlete = athletes.find(a => a.userId === user?.id) || athletes[0]; // Fallback to sample data
+  const athlete = athletes.find(a => a.userId === user?._id) || athletes[0];
   const coach = coaches.find(c => c.id === athlete?.coachId);
   const academy = academies.find(a => a.id === athlete?.academyId);
   const athleteTournaments = tournaments.filter(t => t.sport === athlete?.sport);
+
+  // Edit modal state
+  const [showEdit, setShowEdit] = useState(false);
+  const [form, setForm] = useState({
+    name: athlete?.name || '',
+    age: athlete?.age?.toString() || '',
+    sport: athlete?.sport || '',
+    region: athlete?.region || '',
+    level: athlete?.level || '',
+    bio: athlete?.bio || '',
+    contactEmail: (athlete && 'contactEmail' in athlete ? (athlete as any).contactEmail : '') || '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const payload = { ...form, age: Number(form.age) };
+      const res = await fetch(`/api/athlete/${athlete.id || athlete._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setShowEdit(false);
+        window.location.reload();
+      } else {
+        setError('Failed to update profile');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -52,7 +90,6 @@ const AthleteProfile: React.FC = () => {
             <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
               <User className="h-12 w-12 text-white" />
             </div>
-            
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{athlete.name}</h1>
               <div className="flex flex-wrap items-center gap-4 text-gray-600">
@@ -76,14 +113,44 @@ const AthleteProfile: React.FC = () => {
                 </span>
               </div>
             </div>
+            <div className="ml-auto">
+              <button
+                className="btn btn-outline-primary"
+                onClick={() => setShowEdit(true)}
+              >Edit Profile</button>
+            </div>
           </div>
-
           {athlete.bio && (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-gray-700">{athlete.bio}</p>
             </div>
           )}
         </div>
+
+        {/* Edit Modal */}
+        {showEdit && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg relative">
+              <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowEdit(false)}>
+                &times;
+              </button>
+              <h2 className="text-2xl font-bold mb-4">Edit Athlete Profile</h2>
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <input name="name" placeholder="Name" value={form.name} onChange={handleChange} className="input w-full" required />
+                <input name="age" placeholder="Age" value={form.age} onChange={handleChange} className="input w-full" required />
+                <input name="sport" placeholder="Sport" value={form.sport} onChange={handleChange} className="input w-full" required />
+                <input name="region" placeholder="Region" value={form.region} onChange={handleChange} className="input w-full" required />
+                <input name="level" placeholder="Level (Beginner/Intermediate/Pro)" value={form.level} onChange={handleChange} className="input w-full" required />
+                <textarea name="bio" placeholder="Bio" value={form.bio} onChange={handleChange} className="input w-full" required />
+                <input name="contactEmail" placeholder="Contact Email" value={form.contactEmail} onChange={handleChange} className="input w-full" />
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                <div className="flex justify-end">
+                  <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? "Saving..." : "Save Changes"}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}

@@ -14,6 +14,7 @@ const ProfileSetupAthlete = () => {
   });
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -22,9 +23,14 @@ const ProfileSetupAthlete = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    if (!user?._id) {
+      setError('User not loaded. Please refresh and try again.');
+      return;
+    }
     setLoading(true);
     try {
-      const payload = { ...form, userId: user?._id };
+      const payload = { ...form, userId: user._id };
       const res = await fetch("/api/athlete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,7 +39,7 @@ const ProfileSetupAthlete = () => {
       if (res.ok) {
         router.push("/athlete/dashboard");
       } else {
-        alert("Failed to save athlete profile");
+        setError("Failed to save athlete profile");
       }
     } finally {
       setLoading(false);
@@ -50,6 +56,7 @@ const ProfileSetupAthlete = () => {
       <input name="level" placeholder="Level (Beginner/Intermediate/Pro)" value={form.level} onChange={handleChange} className="input mb-2 w-full" required />
       <textarea name="bio" placeholder="Bio" value={form.bio} onChange={handleChange} className="input mb-2 w-full" required />
       <input name="contactEmail" placeholder="Contact Email" value={form.contactEmail} onChange={handleChange} className="input mb-2 w-full" />
+      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>{loading ? "Saving..." : "Save Profile"}</button>
     </form>
   );
