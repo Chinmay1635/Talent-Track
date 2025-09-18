@@ -1,17 +1,19 @@
-import { useUser } from "@clerk/nextjs";
+
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import Navbar from "../src/components/Layout/Navbar";
+import { useAuth } from "../src/context/AuthContext";
+
 
 export default function Dashboard() {
-  const { user, isLoaded } = useUser();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
+
   useEffect(() => {
-    if (isLoaded && user) {
-      // Get user role from metadata or default to athlete
-      const userRole = user.publicMetadata?.role as string || 'athlete';
-      
+    if (!loading && user) {
+      // Get user role from user object or default to athlete
+      const userRole = user.role || 'athlete';
       // Redirect to role-specific dashboard
       switch (userRole) {
         case 'athlete':
@@ -30,9 +32,10 @@ export default function Dashboard() {
           router.push('/athlete/dashboard');
       }
     }
-  }, [user, isLoaded, router]);
+  }, [user, loading, router]);
 
-  if (!isLoaded) {
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -49,7 +52,7 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}!
+            Welcome, {user?.name || user?.email}!
           </h1>
           <p className="text-gray-600">Redirecting to your dashboard...</p>
         </div>

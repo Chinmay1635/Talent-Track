@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { SignOutButton, useUser } from '@clerk/nextjs';
 import { Trophy, Bell, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 
 const Navbar: React.FC = () => {
   const { user } = useAuth();
-  const { user: clerkUser } = useUser();
   const { notifications } = useData();
   const router = useRouter();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const unreadNotifications = Array.isArray(notifications)
-    ? notifications.filter(n => !n.read && n.userId === user?.id)
+  ? notifications.filter(n => !n.read && n.userId === user?._id)
     : [];
 
   const getRoleBasedLinks = () => {
@@ -131,14 +129,16 @@ const Navbar: React.FC = () => {
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <User className="h-4 w-4 text-blue-600" />
                   </div>
-                  <SignOutButton>
                     <button
                       className="p-2 text-gray-600 hover:text-red-600 transition-colors"
                       title="Logout"
+                      onClick={async () => {
+                        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                        window.location.href = '/sign-in';
+                      }}
                     >
                       <LogOut className="h-4 w-4" />
                     </button>
-                  </SignOutButton>
                 </div>
               </>
             ) : (
