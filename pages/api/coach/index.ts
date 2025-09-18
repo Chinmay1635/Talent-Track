@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Coach from '../../../src/models/Coach';
 
 // GET /api/coach - List all coaches
 // POST /api/coach - Create new coach
@@ -8,25 +9,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const coaches = await prisma.coach.findMany({
-        include: {
-          user: true,
-          academy: true,
-          athletes: true,
-          trainingPlans: true,
-          athleteProgress: true,
-        },
-      });
-      res.status(200).json(coaches);
+        await dbConnect();
+        const coaches = await Coach.find()
+          .populate('user')
+          .populate('academy');
+        res.status(200).json(coaches);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
   } else if (method === 'POST') {
     // Create coach
     try {
-      const data = req.body;
-      const created = await prisma.coach.create({ data });
-      res.status(201).json(created);
+        await dbConnect();
+        let data = req.body;
+        // Convert string IDs to ObjectIds if present
+        if (data.userId) {
+          data.user = data.userId;
+          delete data.userId;
+        }
+        if (data.academyId) {
+          data.academy = data.academyId;
+          delete data.academyId;
+        }
+        const created = await Coach.create(data);
+        res.status(201).json(created);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

@@ -4,18 +4,18 @@ import { Sponsor, TrainingProvider, TrainingProgram, AthleteProgress, Tournament
 // Removed sampleData imports. Data will be fetched from backend APIs.
 
 interface DataContextType {
-  athletes: Athlete[];
-  coaches: Coach[];
-  academies: Academy[];
-  tournaments: Tournament[];
-  badges: Badge[];
-  trainingPlans: TrainingPlan[];
-  notifications: Notification[];
-  sponsors: Sponsor[];
-  trainingProviders: TrainingProvider[];
-  trainingPrograms: TrainingProgram[];
-  athleteProgress: AthleteProgress[];
-  tournamentWinners: TournamentWinner[];
+  athletes: (Athlete & { id?: string; _id?: string })[];
+  coaches: (Coach & { id?: string; _id?: string })[];
+  academies: (Academy & { id?: string; _id?: string })[];
+  tournaments: (Tournament & { id?: string; _id?: string })[];
+  badges: (Badge & { id?: string; _id?: string })[];
+  trainingPlans: (TrainingPlan & { id?: string; _id?: string })[];
+  notifications: (Notification & { id?: string; _id?: string })[];
+  sponsors: (Sponsor & { id?: string; _id?: string })[];
+  trainingProviders: (TrainingProvider & { id?: string; _id?: string })[];
+  trainingPrograms: (TrainingProgram & { id?: string; _id?: string })[];
+  athleteProgress: (AthleteProgress & { id?: string; _id?: string })[];
+  tournamentWinners: (TournamentWinner & { id?: string; _id?: string })[];
   addTournament: (tournament: Omit<Tournament, 'id'>) => void;
   registerForTournament: (tournamentId: string, athleteId: string) => void;
   enrollInTraining: (programId: string, athleteId: string) => void;
@@ -104,12 +104,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const registerForTournament = (tournamentId: string, athleteId: string) => {
     setTournaments(prev => 
       prev.map(tournament => 
-        tournament.id === tournamentId 
+        (tournament.id === tournamentId || (tournament as any)._id === tournamentId)
           ? { ...tournament, currentParticipants: tournament.currentParticipants + 1 }
           : tournament
       )
     );
-    
     // Add notification
     addNotification({
       userId: athleteId,
@@ -124,7 +123,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const enrollInTraining = (programId: string, athleteId: string) => {
     setTrainingPrograms(prev => 
       prev.map(program => 
-        program.id === programId 
+        program.id === programId
           ? { ...program, currentParticipants: program.currentParticipants + 1 }
           : program
       )
@@ -141,21 +140,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const sponsorTournament = (tournamentId: string, sponsorId: string, prize: string) => {
-    const tournament = tournaments.find(t => t.id === tournamentId);
-    const sponsor = sponsors.find(s => s.id === sponsorId);
-    
+    const tournament = tournaments.find(t => t.id === tournamentId || (t as any)._id === tournamentId);
+    const sponsor = sponsors.find(s => s.id === sponsorId || (s as any)._id === sponsorId);
     if (tournament && sponsor) {
       setSponsors(prev => 
         prev.map(s => 
-          s.id === sponsorId 
+          (s.id === sponsorId || (s as any)._id === sponsorId)
             ? { ...s, sponsoredTournaments: [...s.sponsoredTournaments, tournamentId] }
             : s
         )
       );
-      
       setTournaments(prev => 
         prev.map(t => 
-          t.id === tournamentId 
+          (t.id === tournamentId || (t as any)._id === tournamentId)
             ? { ...t, prizePool: prize }
             : t
         )
@@ -165,13 +162,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const assignCoachToAthlete = (athleteId: string, coachId: string) => {
     setAthletes(prev => 
-      prev.map(athlete => 
-        athlete.id === athleteId 
-          ? { ...athlete, coachId }
-          : athlete
-      )
+      prev.map(athlete => {
+        if ((athlete.id && athlete.id === athleteId) || (athlete as any)._id === athleteId) {
+          return { ...athlete, coachId };
+        }
+        return athlete;
+      })
     );
-    
     // Add notification
     addNotification({
       userId: athleteId,
@@ -184,7 +181,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const awardBadgeToAthlete = (athleteId: string, badgeId: string) => {
-    const badge = badges.find(b => b.id === badgeId);
+  const badge = badges.find(b => b.id === badgeId);
     if (!badge) return;
 
     setAthletes(prev => 
@@ -209,12 +206,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateAthleteLevel = (athleteId: string, level: 'Beginner' | 'Intermediate' | 'Pro') => {
     setAthletes(prev => 
       prev.map(athlete => 
-        athlete.id === athleteId 
+        (athlete.id === athleteId || (athlete as any)._id === athleteId)
           ? { ...athlete, level }
           : athlete
       )
     );
-    
     // Add notification
     addNotification({
       userId: athleteId,
@@ -291,9 +287,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeAcademy = async (academyId: string) => {
     const res = await fetch(`/api/academy/${academyId}`, { method: 'DELETE' });
     if (res.ok) {
-      setAcademies(prev => prev.filter(a => a.id !== academyId));
-      setCoaches(prev => prev.filter(c => c.academyId !== academyId));
-      setAthletes(prev => prev.filter(a => a.academyId !== academyId));
+  setAcademies(prev => prev.filter(a => a._id !== academyId));
+      setCoaches(prev => prev.filter(c => (c.academyId && c.academyId !== academyId)));
+      setAthletes(prev => prev.filter(a => (a.academyId && a.academyId !== academyId)));
     }
   };
 
@@ -312,12 +308,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeCoachFromAcademy = async (coachId: string) => {
     const res = await fetch(`/api/coach/${coachId}`, { method: 'DELETE' });
     if (res.ok) {
-      setCoaches(prev => prev.filter(c => c.id !== coachId));
-      setAthletes(prev => prev.map(a => a.coachId === coachId ? { ...a, coachId: undefined } : a));
+  setCoaches(prev => prev.filter(c => (c as any)._id !== coachId));
+      setAthletes(prev => prev.map(a => (a.coachId === coachId ? { ...a, coachId: undefined } : a)));
     }
   };
 
   const updateAcademySports = async (academyId: string, sports: string[]) => {
+    console.log('updateAcademySports called', academyId, sports);
     const res = await fetch(`/api/academy/${academyId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -325,7 +322,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     if (res.ok) {
       const updated = await res.json();
-      setAcademies(prev => prev.map(a => a.id === academyId ? updated : a));
+  setAcademies(prev => prev.map(a => (a._id === academyId ? updated : a)));
+      console.log('Academy updated:', updated);
+      return updated;
+    } else {
+      const errorText = await res.text();
+      console.error('Failed to update academy sports:', errorText);
+      throw new Error(errorText || 'Failed to update sports');
     }
   };
 

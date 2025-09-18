@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import TrainingPlan from '../../../src/models/TrainingPlan';
 
 // GET /api/training-plan - List all training plans
 // POST /api/training-plan - Create new training plan
@@ -8,14 +9,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const plans = await prisma.trainingPlan.findMany({
-        include: {
-          athlete: true,
-          coach: true,
-          exercises: true,
-        },
-      });
-      res.status(200).json(plans);
+        await dbConnect();
+        const plans = await TrainingPlan.find()
+          .populate('athlete')
+          .populate('coach')
+          .populate('exercises');
+        res.status(200).json(plans);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -23,8 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create training plan
     try {
       const data = req.body;
-      const created = await prisma.trainingPlan.create({ data });
-      res.status(201).json(created);
+        await dbConnect();
+        const created = await TrainingPlan.create(data);
+        res.status(201).json(created);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

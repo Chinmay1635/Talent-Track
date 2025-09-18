@@ -8,12 +8,20 @@ const CoachLanding: React.FC = () => {
   const { user } = useAuth();
   const { coaches, athletes, tournaments, trainingPlans } = useData();
 
-  const coach = coaches.find(c => c.userId === user?.id) || coaches[0];
-  const myAthletes = athletes.filter(a => a.coachId === coach?.id);
-  const upcomingTournaments = tournaments.filter(t => 
-    t.status === 'upcoming' && 
-    myAthletes.some(athlete => athlete.sport === t.sport)
-  ).slice(0, 3);
+  const coach = Array.isArray(coaches) && coaches.length > 0
+    ? coaches.find(c => c.userId === user?.id) || coaches[0]
+    : undefined;
+
+  const myAthletes = Array.isArray(athletes) && coach?.id
+    ? athletes.filter(a => a.coachId === coach.id)
+    : [];
+
+  const upcomingTournaments = Array.isArray(tournaments) && myAthletes.length > 0
+    ? tournaments.filter(t => 
+        t.status === 'upcoming' && 
+        myAthletes.some(athlete => athlete.sport === t.sport)
+      ).slice(0, 3)
+    : [];
 
   const recentActivities = [
     {

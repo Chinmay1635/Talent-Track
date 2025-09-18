@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Academy from '../../../src/models/Academy';
 
 // GET /api/academy - List all academies
 // POST /api/academy - Create new academy
@@ -8,14 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const academies = await prisma.academy.findMany({
-        include: {
-          user: true,
-          athletes: true,
-          coaches: true,
-          tournaments: true,
-        },
-      });
+      await dbConnect();
+      const academies = await Academy.find();
       res.status(200).json(academies);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -23,8 +18,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (method === 'POST') {
     // Create academy
     try {
+      await dbConnect();
       const data = req.body;
-      const created = await prisma.academy.create({ data });
+      const created = await Academy.create(data);
       res.status(201).json(created);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

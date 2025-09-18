@@ -7,7 +7,8 @@ const CoachDashboard: React.FC = () => {
   const { user } = useAuth();
   const { coaches, athletes, trainingPlans, athleteProgress, awardBadgeToAthlete, updateAthleteLevel, updateAthleteProgress, badges } = useData();
 
-  const coach = coaches.find(c => c.userId === user?.id) || coaches[0];
+  const coachList = Array.isArray(coaches) ? coaches : [];
+  const coach = coachList.find(c => c.userId === user?._id) || coachList[0];
   const myAthletes = athletes.filter(a => a.coachId === coach?.id);
   const myTrainingPlans = trainingPlans.filter(tp => tp.coachId === coach?.id);
   const myAthleteProgress = athleteProgress.filter(ap => ap.coachId === coach?.id);

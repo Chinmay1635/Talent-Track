@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
 import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  login: (email: string, password: string, role: string) => Promise<void>;
+  register: (email: string, password: string, name: string, role: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,30 +21,46 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user: clerkUser, isLoaded } = useUser();
-
-  useEffect(() => {
-    if (isLoaded) {
-      if (clerkUser) {
-        // Convert Clerk user to our User type
-        const talentTrackUser: User = {
-          id: clerkUser.id, // Clerk user id
-          clerkUserId: clerkUser.id, // For Prisma
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
-          name: clerkUser.firstName ? `${clerkUser.firstName} ${clerkUser.lastName || ''}`.trim() : clerkUser.emailAddresses[0]?.emailAddress || '',
-          role: (clerkUser.publicMetadata?.role as 'athlete' | 'coach' | 'academy' | 'sponsor') || 'athlete',
-          createdAt: clerkUser.createdAt?.toISOString() || new Date().toISOString()
-        };
-        setUser(talentTrackUser);
-      } else {
-        setUser(null);
-      }
+  // Manual login method using API
+  const login = async (email: string, password: string, role: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role })
+      });
+      if (!res.ok) throw new Error('Login failed');
+      const userData = await res.json();
+      setUser(userData);
+    } finally {
       setLoading(false);
     }
-  }, [clerkUser, isLoaded]);
+  };
+
+  // Manual register method using API
+  const register = async (email: string, password: string, name: string, role: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name, role })
+      });
+      if (!res.ok) throw new Error('Register failed');
+      const userData = await res.json();
+      setUser(userData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, login, register }}>
       {children}
     </AuthContext.Provider>
   );

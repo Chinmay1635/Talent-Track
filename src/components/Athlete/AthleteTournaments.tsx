@@ -12,18 +12,21 @@ const AthleteTournaments: React.FC = () => {
 
   const athlete = athletes.find(a => a.userId === user?.id) || athletes[0];
 
-  const filteredTournaments = tournaments.filter(tournament => {
-    const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         tournament.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSport = sportFilter === 'all' || tournament.sport === sportFilter;
-    const matchesLevel = levelFilter === 'all' || 
-                        tournament.eligibilityLevel === 'All' || 
-                        tournament.eligibilityLevel === levelFilter;
-    
-    return matchesSearch && matchesSport && matchesLevel;
-  });
+  const filteredTournaments = Array.isArray(tournaments)
+    ? tournaments.filter(tournament => {
+        const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tournament.location.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSport = sportFilter === 'all' || tournament.sport === sportFilter;
+        const matchesLevel = levelFilter === 'all' ||
+          tournament.eligibilityLevel === 'All' ||
+          tournament.eligibilityLevel === levelFilter;
+        return matchesSearch && matchesSport && matchesLevel;
+      })
+    : [];
 
-  const uniqueSports = [...new Set(tournaments.map(t => t.sport))];
+  const uniqueSports = Array.isArray(tournaments)
+    ? [...new Set(tournaments.map(t => t.sport))]
+    : [];
 
   const handleRegister = (tournamentId: string) => {
     if (athlete) {

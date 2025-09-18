@@ -1,6 +1,5 @@
 export interface User {
-  id: string;
-  clerkUserId: string;
+  _id: string;
   email: string;
   name: string;
   role: 'athlete' | 'coach' | 'academy' | 'sponsor';
@@ -35,7 +34,7 @@ export interface Coach {
 }
 
 export interface Academy {
-  id: string;
+  _id: string;
   userId: string;
   name: string;
   location: string;

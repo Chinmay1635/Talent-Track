@@ -9,7 +9,9 @@ const TopPerformers: React.FC = () => {
   const [selectedTournament, setSelectedTournament] = useState('');
 
   const sponsor = sponsors.find(s => s.userId === user?.id) || sponsors[0];
-  const completedTournaments = tournaments.filter(t => t.status === 'completed');
+  const completedTournaments = Array.isArray(tournaments)
+    ? tournaments.filter(t => t.status === 'completed')
+    : [];
 
   // Mock tournament winners data for demonstration
   const mockWinners = {

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Sponsor from '../../../src/models/Sponsor';
 
 // GET /api/sponsor - List all sponsors
 // POST /api/sponsor - Create new sponsor
@@ -8,13 +9,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const sponsors = await prisma.sponsor.findMany({
-        include: {
-          user: true,
-          tournamentWinners: true,
-        },
-      });
-      res.status(200).json(sponsors);
+        await dbConnect();
+        const sponsors = await Sponsor.find().populate('user').populate('tournamentWinners');
+        res.status(200).json(sponsors);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -22,8 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create sponsor
     try {
       const data = req.body;
-      const created = await prisma.sponsor.create({ data });
-      res.status(201).json(created);
+        await dbConnect();
+        const created = await Sponsor.create(data);
+        res.status(201).json(created);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

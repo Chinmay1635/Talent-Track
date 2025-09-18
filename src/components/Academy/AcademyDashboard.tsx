@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { Users, Trophy, MapPin, Plus, Calendar, Award, Building, Edit, Trash2, UserPlus } from 'lucide-react';
+import CoachSelectDropdown from './CoachSelectDropdown';
+import { Users, Trophy, Plus, Award, Building, Edit, Trash2, UserPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 
+// Type fixes for compatibility with MongoDB
+// ...existing code...
+
 const AcademyDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { 
+  let { 
     academies, 
     athletes, 
     coaches, 
@@ -39,12 +43,21 @@ const AcademyDashboard: React.FC = () => {
     bio: '',
     specialization: ''
   });
+  const [selectedCoachUserId, setSelectedCoachUserId] = useState('');
   const [newSports, setNewSports] = useState<string[]>([]);
+  const [sportsLoading, setSportsLoading] = useState(false);
+  const [sportsError, setSportsError] = useState<string | null>(null);
+  const [sportsSuccess, setSportsSuccess] = useState(false);
 
-  const academy = academies.find(a => a.userId === user?.id) || academies[0];
-  const academyAthletes = athletes.filter(a => a.academyId === academy?.id);
-  const academyCoaches = coaches.filter(c => c.academyId === academy?.id);
-  const academyTournaments = tournaments.filter(t => t.academyId === academy?.id);
+  // Defensive: ensure academies is always an array
+  if (!Array.isArray(academies)) academies = [];
+  // Use _id for MongoDB consistency
+  const academy = academies.find(a => a.userId === user?._id) || academies[0];
+  const [academyError, setAcademyError] = useState<string | null>(null);
+  const academyAthletes = Array.isArray(athletes) ? athletes.filter(a => a.academyId === academy?._id || a.academyId === academy?.id) : [];
+  if (!Array.isArray(coaches)) coaches = [];
+  const academyCoaches = Array.isArray(coaches) ? coaches.filter(c => c.academyId === academy?._id || c.academyId === academy?.id) : [];
+  const academyTournaments = Array.isArray(tournaments) ? tournaments.filter(t => t.academyId === academy?._id) : [];
 
   const handleTournamentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +65,7 @@ const AcademyDashboard: React.FC = () => {
 
     addTournament({
       ...tournamentForm,
-      academyId: academy.id,
+  academyId: academy._id,
       academyName: academy.name,
       currentParticipants: 0,
       status: 'upcoming'
@@ -76,12 +89,15 @@ const AcademyDashboard: React.FC = () => {
   const handleCoachSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!academy) return;
-
-    addCoachToAcademy(academy.id, {
+    // Always use selectedCoachUserId from dropdown
+    if (!selectedCoachUserId || selectedCoachUserId.length < 10) {
+      alert('Please select a registered coach user from the dropdown.');
+      return;
+    }
+    addCoachToAcademy(academy._id, {
       ...coachForm,
-      userId: `user-coach-${Date.now()}`
+      userId: selectedCoachUserId
     });
-
     setCoachForm({
       userId: '',
       name: '',
@@ -90,6 +106,7 @@ const AcademyDashboard: React.FC = () => {
       bio: '',
       specialization: ''
     });
+    setSelectedCoachUserId('');
     setShowCoachForm(false);
   };
 
@@ -100,11 +117,41 @@ const AcademyDashboard: React.FC = () => {
   };
 
   const handleSportsSubmit = (e: React.FormEvent) => {
+    console.log("Btn clicked")
     e.preventDefault();
-    if (!academy) return;
-
-    updateAcademySports(academy.id, newSports);
-    setShowSportsForm(false);
+    console.log('academy:', academy);
+    if (!academy) {
+      setAcademyError('No academy found for this user. Please check your account or contact support.');
+      setSportsLoading(false);
+      return;
+    }
+    setAcademyError(null);
+    setSportsLoading(true);
+    setSportsError(null);
+    setSportsSuccess(false);
+    let updatePromise;
+    try {
+  updatePromise = Promise.resolve(updateAcademySports(academy._id, newSports));
+    } catch (err) {
+      console.error("Error thrown by updateAcademySports:", err);
+      setSportsError(typeof err === 'object' && err !== null && 'message' in err ? (err as any).message : 'Failed to update sports');
+      setSportsLoading(false);
+      return;
+    }
+    updatePromise
+      .then((result) => {
+        console.log("Success", result);
+        setSportsSuccess(true);
+        // Don't close modal immediately so user sees success message
+        setTimeout(() => setShowSportsForm(false), 1200);
+      })
+      .catch((err) => {
+        console.error("Promise rejected:", err);
+        setSportsError(typeof err === 'object' && err !== null && 'message' in err ? (err as any).message : 'Failed to update sports');
+      })
+      .finally(() => {
+        setSportsLoading(false);
+      });
   };
 
   const handleAssignCoach = (athleteId: string, coachId: string) => {
@@ -183,44 +230,46 @@ const AcademyDashboard: React.FC = () => {
 
               <div className="space-y-4">
                 {academyAthletes.map((athlete) => (
-                  <div key={athlete.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{athlete.name}</h3>
-                        <p className="text-sm text-gray-600">{athlete.sport} • {athlete.level}</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">Badges: {athlete.badges.length}</span>
-                        <div className="flex space-x-1">
-                          {athlete.badges.slice(0, 3).map((badge) => (
-                            <span key={badge.id} className="text-sm">{badge.icon}</span>
-                          ))}
+                    <div key={athlete?.id || athlete?._id || Math.random()} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{athlete?.name || 'No name'}</h3>
+                          <p className="text-sm text-gray-600">{athlete?.sport || 'No sport'} • {athlete?.level || 'No level'}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-600">Badges: {Array.isArray(athlete?.badges) ? athlete.badges.length : 0}</span>
+                          <div className="flex space-x-1">
+                            {Array.isArray(athlete?.badges) ? athlete.badges.slice(0, 3).map((badge, idx) => (
+                              <span key={badge?.id || idx} className="text-sm">{badge?.icon || ''}</span>
+                            )) : null}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600">
-                        Coach: {coaches.find(c => c.id === athlete.coachId)?.name || 'Not assigned'}
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600">
+                          Coach: {coaches.find(c => c._id === athlete?.coachId || c.id === athlete?.coachId)?.name || 'Not assigned'}
+                        </div>
+                        {!athlete?.coachId && academyCoaches.length > 0 && (
+                          <select
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                const athleteId = athlete?.id ?? athlete?._id;
+                                if (typeof athleteId === 'string') {
+                                  handleAssignCoach(athleteId, e.target.value);
+                                }
+                              }
+                            }}
+                            className="text-sm px-2 py-1 border border-gray-300 rounded"
+                          >
+                            <option value="">Assign Coach</option>
+                            {academyCoaches.map(coach => (
+                              <option key={coach?._id || Math.random()} value={coach?._id}>{coach?.name || 'No name'}</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
-                      
-                      {!athlete.coachId && academyCoaches.length > 0 && (
-                        <select
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              handleAssignCoach(athlete.id, e.target.value);
-                            }
-                          }}
-                          className="text-sm px-2 py-1 border border-gray-300 rounded"
-                        >
-                          <option value="">Assign Coach</option>
-                          {academyCoaches.map(coach => (
-                            <option key={coach.id} value={coach.id}>{coach.name}</option>
-                          ))}
-                        </select>
-                      )}
                     </div>
-                  </div>
                 ))}
 
                 {academyAthletes.length === 0 && (
@@ -247,7 +296,7 @@ const AcademyDashboard: React.FC = () => {
 
               <div className="space-y-4">
                 {academyTournaments.map((tournament) => (
-                  <div key={tournament.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={tournament.id || tournament._id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-gray-900">{tournament.name}</h3>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -323,15 +372,17 @@ const AcademyDashboard: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {academyCoaches.map((coach) => (
-                  <div key={coach.id} className="p-3 bg-gray-50 rounded-lg">
+                  <div key={coach?._id || Math.random()} className="p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-medium text-gray-900">{coach.name}</h3>
-                        <p className="text-sm text-gray-600">{coach.sport}</p>
-                        <p className="text-xs text-gray-500">{coach.experience} years experience</p>
+                        <h3 className="font-medium text-gray-900">{coach?.name || 'No name'}</h3>
+                        <p className="text-sm text-gray-600">{coach?.sport || 'No sport'}</p>
+                        <p className="text-xs text-gray-500">{coach?.experience || 0} years experience</p>
                       </div>
                       <button
-                        onClick={() => handleRemoveCoach(coach.id)}
+                        onClick={() => {
+                          if (typeof coach?._id === 'string') handleRemoveCoach(coach._id);
+                        }}
                         className="text-red-600 hover:text-red-700 p-1"
                         title="Remove Coach"
                       >
@@ -405,7 +456,7 @@ const AcademyDashboard: React.FC = () => {
                         required
                       >
                         <option value="">Select Sport</option>
-                        {academy?.sports.map(sport => (
+                        {(Array.isArray(academy?.sports) ? academy.sports : []).map(sport => (
                           <option key={sport} value={sport}>{sport}</option>
                         ))}
                       </select>
@@ -538,6 +589,16 @@ const AcademyDashboard: React.FC = () => {
                 
                 <form onSubmit={handleCoachSubmit} className="space-y-4">
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Registered Coach User</label>
+                    <CoachSelectDropdown
+                      selectedCoachId={selectedCoachUserId}
+                      onSelect={(coachId) => {
+                        setSelectedCoachUserId(coachId);
+                        setCoachForm({ ...coachForm, userId: coachId });
+                      }}
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coach Name</label>
                     <input
                       type="text"
@@ -547,7 +608,6 @@ const AcademyDashboard: React.FC = () => {
                       required
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sport</label>
                     <select
@@ -562,7 +622,6 @@ const AcademyDashboard: React.FC = () => {
                       ))}
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Experience (years)</label>
                     <input
@@ -574,7 +633,6 @@ const AcademyDashboard: React.FC = () => {
                       required
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
                     <input
@@ -585,7 +643,6 @@ const AcademyDashboard: React.FC = () => {
                       placeholder="e.g., Technical Training, Fitness"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
                     <textarea
@@ -596,7 +653,6 @@ const AcademyDashboard: React.FC = () => {
                       placeholder="Coach background and experience..."
                     />
                   </div>
-
                   <div className="flex justify-end space-x-4 pt-4">
                     <button
                       type="button"
@@ -625,6 +681,9 @@ const AcademyDashboard: React.FC = () => {
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Sports Offered</h2>
                 
+                {academyError && (
+                  <div className="text-red-600 text-sm mb-2">{academyError}</div>
+                )}
                 <form onSubmit={handleSportsSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Sports (one per line)</label>
@@ -634,22 +693,30 @@ const AcademyDashboard: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       rows={6}
                       placeholder="Boxing&#10;Cricket&#10;Badminton&#10;Football"
+                      disabled={sportsLoading || !!academyError}
                     />
                   </div>
-
+                  {sportsError && (
+                    <div className="text-red-600 text-sm">{sportsError}</div>
+                  )}
+                  {sportsSuccess && (
+                    <div className="text-green-600 text-sm">Sports updated successfully!</div>
+                  )}
                   <div className="flex justify-end space-x-4 pt-4">
                     <button
                       type="button"
                       onClick={() => setShowSportsForm(false)}
                       className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      disabled={sportsLoading}
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      className={`px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors ${sportsLoading || !!academyError ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={sportsLoading || !!academyError}
                     >
-                      Update Sports
+                      {sportsLoading ? 'Updating...' : 'Update Sports'}
                     </button>
                   </div>
                 </form>

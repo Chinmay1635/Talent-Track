@@ -1,22 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Academy from '../../../src/models/Academy';
+
 
 // GET /api/academy/[id] - Get academy by ID
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
   const { id } = req.query;
+  await dbConnect();
 
   if (method === 'GET') {
     try {
-      const academy = await prisma.academy.findUnique({
-        where: { id: id as string },
-        include: {
-          user: true,
-          athletes: true,
-          coaches: true,
-          tournaments: true,
-        },
-      });
+      const academy = await Academy.findById(id);
       if (!academy) return res.status(404).json({ error: 'Academy not found' });
       res.status(200).json(academy);
     } catch (error) {
@@ -26,10 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Update academy
     try {
       const data = req.body;
-      const updated = await prisma.academy.update({
-        where: { id: id as string },
-        data,
-      });
+      const updated = await Academy.findByIdAndUpdate(id, data, { new: true });
       res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -37,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (method === 'DELETE') {
     // Delete academy
     try {
-      await prisma.academy.delete({ where: { id: id as string } });
+      await Academy.findByIdAndDelete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

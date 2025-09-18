@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Athlete from '../../../src/models/Athlete';
 
 // GET /api/athlete - List all athletes
 // POST /api/athlete - Create new athlete
@@ -8,36 +9,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const athletes = await prisma.athlete.findMany({
-        include: {
-          user: true,
-          academy: true,
-          coach: true,
-          badges: { include: { badge: true } },
-          trainingPlans: true,
-          progress: true,
-          registrations: true,
-        },
-      });
-      res.status(200).json(athletes);
+        await dbConnect();
+        const athletes = await Athlete.find()
+          .populate('user')
+          .populate('academy')
+          .populate('coach')
+          .populate('badges')
+          .populate('trainingPlans')
+          .populate('progress')
+          .populate('registrations');
+        res.status(200).json(athletes);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
   } else if (method === 'POST') {
     // Create athlete
     try {
-      const data = req.body;
-      // Ensure userId is present (should be sent from frontend)
-      if (!data.userId) {
-        return res.status(400).json({ error: 'userId is required' });
-      }
-      // Convert age to number if present
-      if (data.age) data.age = Number(data.age);
-      // Convert level to proper enum case
-      if (data.level) data.level =
-        data.level.charAt(0).toUpperCase() + data.level.slice(1).toLowerCase();
-      const created = await prisma.athlete.create({ data });
-      res.status(201).json(created);
+        await dbConnect();
+        let data = req.body;
+        // Convert string IDs to ObjectIds if present
+        if (data.userId) {
+          data.user = data.userId;
+          delete data.userId;
+        }
+        if (data.academyId) {
+          data.academy = data.academyId;
+          delete data.academyId;
+        }
+        if (data.coachId) {
+          data.coach = data.coachId;
+          delete data.coachId;
+        }
+        if (!data.user) {
+          return res.status(400).json({ error: 'user is required' });
+        }
+        if (data.age) data.age = Number(data.age);
+        if (data.level) data.level = data.level.charAt(0).toUpperCase() + data.level.slice(1).toLowerCase();
+        const created = await Athlete.create(data);
+        res.status(201).json(created);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

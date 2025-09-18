@@ -8,6 +8,9 @@ const ProfileSetupAcademy = () => {
     location: "",
     description: "",
     website: "",
+    establishedYear: "",
+    contactEmail: "",
+    sports: "",
   });
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -21,18 +24,21 @@ const ProfileSetupAcademy = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Ensure user exists in Prisma
+      // Ensure user exists in DB
       await fetch("/api/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          clerkUserId: user?.clerkUserId,
           email: user?.email,
           name: user?.name,
           role: user?.role,
         }),
       });
-  const payload = { ...form, userId: user?.id };
+      const payload = {
+        ...form,
+        userId: user?._id,
+        sports: form.sports.split(',').map(s => s.trim()).filter(Boolean),
+      };
       const res = await fetch("/api/academy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -55,7 +61,10 @@ const ProfileSetupAcademy = () => {
       <input name="location" placeholder="Location" value={form.location} onChange={handleChange} className="input mb-2 w-full" required />
       <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} className="input mb-2 w-full" required />
       <input name="website" placeholder="Website" value={form.website} onChange={handleChange} className="input mb-2 w-full" />
-  {/* Contact Email removed, not in schema */}
+      <input name="establishedYear" placeholder="Established Year" value={form.establishedYear} onChange={handleChange} className="input mb-2 w-full" />
+      <input name="contactEmail" placeholder="Contact Email" value={form.contactEmail} onChange={handleChange} className="input mb-2 w-full" />
+  <label className="block mb-2">Sports Offered</label>
+  <input name="sports" placeholder="Comma separated sports" value={form.sports} onChange={e => setForm({...form, sports: e.target.value})} className="input mb-2 w-full" />
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>{loading ? "Saving..." : "Save Profile"}</button>
     </form>
   );

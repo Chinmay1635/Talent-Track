@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Notification from '../../../src/models/Notification';
 
 // GET /api/notification - List all notifications
 // POST /api/notification - Create new notification
@@ -8,11 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const notifications = await prisma.notification.findMany({
-        include: {
-          user: true,
-        },
-      });
+      await dbConnect();
+      const notifications = await Notification.find();
       res.status(200).json(notifications);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -21,7 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create notification
     try {
       const data = req.body;
-      const created = await prisma.notification.create({ data });
+      await dbConnect();
+      const created = await Notification.create(data);
       res.status(201).json(created);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

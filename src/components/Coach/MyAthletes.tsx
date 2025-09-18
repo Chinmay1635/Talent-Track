@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Users, Award, TrendingUp, Star, Edit, Plus, BarChart3 } from 'lucide-react';
+import React from 'react';
+import { Users, Award, TrendingUp, Star, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 
 const MyAthletes: React.FC = () => {
   const { user } = useAuth();
-  const { coaches, athletes, athleteProgress, badges, awardBadgeToAthlete, updateAthleteLevel, updateAthleteProgress } = useData();
-  const [selectedAthlete, setSelectedAthlete] = useState<string>('');
+  const { coaches, athletes, athleteProgress, badges, awardBadgeToAthlete, updateAthleteLevel } = useData();
+  // Removed unused selectedAthlete state
 
-  const coach = coaches.find(c => c.userId === user?.id) || coaches[0];
+  const coach = coaches.find(c => c.userId === user?._id) || coaches[0];
   const myAthletes = athletes.filter(a => a.coachId === coach?.id);
 
   // Add some dummy athletes for demonstration
@@ -285,8 +285,8 @@ const MyAthletes: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-1">
                           {athlete.badges.slice(0, 3).map((badge) => (
-                            <span key={badge.id} className="text-lg" title={badge.name}>
-                              {badge.icon}
+                            <span key={badge?.id || Math.random()} className="text-lg" title={badge?.name || ''}>
+                              {badge?.icon || ''}
                             </span>
                           ))}
                           {athlete.badges.length > 3 && (
@@ -376,12 +376,12 @@ const MyAthletes: React.FC = () => {
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">Training Completion</span>
-                        <span className="font-semibold text-purple-600">{progress.completionRate || 0}%</span>
+                        <span className="font-semibold text-purple-600">{'completionRate' in progress ? progress.completionRate : 0}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-purple-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${progress.completionRate || 0}%` }}
+                          style={{ width: `${'completionRate' in progress ? progress.completionRate : 0}%` }}
                         ></div>
                       </div>
                     </div>

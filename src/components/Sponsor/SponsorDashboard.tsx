@@ -13,22 +13,36 @@ const SponsorDashboard: React.FC = () => {
   const [selectedTournament, setSelectedTournament] = useState<string>('');
   const [sponsorAmount, setSponsorAmount] = useState('');
 
-  const sponsor = sponsors.find(s => s.userId === user?.id) || sponsors[0];
+  const sponsor = Array.isArray(sponsors) && sponsors.length > 0
+    ? sponsors.find(s => s.userId === user?.id) || sponsors[0]
+    : undefined;
 
-  const filteredTournaments = tournaments.filter(tournament => {
-    const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         tournament.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSport = sportFilter === 'all' || tournament.sport === sportFilter;
-    const matchesLocation = locationFilter === 'all' || tournament.location.includes(locationFilter);
-    
-    return matchesSearch && matchesSport && matchesLocation;
-  });
+  const filteredTournaments = Array.isArray(tournaments)
+    ? tournaments.filter(tournament => {
+        const matchesSearch = tournament.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tournament.location?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSport = sportFilter === 'all' || tournament.sport === sportFilter;
+        const matchesLocation = locationFilter === 'all' || tournament.location?.includes(locationFilter);
+        return matchesSearch && matchesSport && matchesLocation;
+      })
+    : [];
 
-  const uniqueSports = [...new Set(tournaments.map(t => t.sport))];
-  const uniqueLocations = [...new Set(tournaments.map(t => t.location.split(',')[1]?.trim() || t.location))];
+  const uniqueSports = Array.isArray(tournaments)
+    ? [...new Set(tournaments.map(t => t.sport))]
+    : [];
+  const uniqueLocations = Array.isArray(tournaments)
+    ? [...new Set(tournaments.map(t => t.location?.split(',')[1]?.trim() || t.location))]
+    : [];
 
-  const sponsoredTournaments = tournaments.filter(t => sponsor?.sponsoredTournaments.includes(t.id));
-  const topAthletes = athletes.filter(a => a.badges.length > 0).sort((a, b) => b.badges.length - a.badges.length).slice(0, 6);
+  const sponsoredTournaments = Array.isArray(tournaments) && sponsor?.sponsoredTournaments
+    ? tournaments.filter(t => Array.isArray(sponsor.sponsoredTournaments) && sponsor.sponsoredTournaments.includes(t.id))
+    : [];
+
+  const topAthletes = Array.isArray(athletes)
+    ? athletes.filter(a => Array.isArray(a.badges) && a.badges.length > 0)
+        .sort((a, b) => b.badges.length - a.badges.length)
+        .slice(0, 6)
+    : [];
 
   const handleSponsorSubmit = (e: React.FormEvent) => {
     e.preventDefault();

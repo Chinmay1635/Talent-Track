@@ -22,7 +22,7 @@ const Login: React.FC = () => {
 
     try {
       await login(email, password, role);
-      // Navigate based on role
+      // Navigate based on role (no Prisma logic)
       switch (role) {
         case 'athlete':
           router.push('/athlete/profile');

@@ -9,7 +9,9 @@ const SponsorLanding: React.FC = () => {
   const { sponsors, tournaments, athletes, tournamentWinners } = useData();
 
   const sponsor = sponsors.find(s => s.userId === user?.id) || sponsors[0];
-  const sponsoredTournaments = tournaments.filter(t => sponsor?.sponsoredTournaments.includes(t.id));
+  const sponsoredTournaments = Array.isArray(tournaments)
+    ? tournaments.filter(t => sponsor?.sponsoredTournaments.includes(t.id))
+    : [];
   const topAthletes = athletes.filter(a => a.badges.length > 0).sort((a, b) => b.badges.length - a.badges.length).slice(0, 6);
 
   const sponsorshipBenefits = [
@@ -39,7 +41,9 @@ const SponsorLanding: React.FC = () => {
     }
   ];
 
-  const featuredTournaments = tournaments.filter(t => t.status === 'upcoming').slice(0, 3);
+  const featuredTournaments = Array.isArray(tournaments)
+    ? tournaments.filter(t => t.status === 'upcoming').slice(0, 3)
+    : [];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

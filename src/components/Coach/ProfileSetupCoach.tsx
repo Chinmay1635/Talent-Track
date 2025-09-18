@@ -7,7 +7,9 @@ const ProfileSetupCoach = () => {
     name: "",
     bio: "",
     experience: "",
-    specialty: "",
+    specialization: "",
+    sport: "",
+    contactEmail: "",
   });
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -21,18 +23,17 @@ const ProfileSetupCoach = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Ensure user exists in Prisma
+      // Ensure user exists in DB
       await fetch("/api/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          clerkUserId: user?.clerkUserId,
           email: user?.email,
           name: user?.name,
           role: user?.role,
         }),
       });
-  const payload = { ...form, userId: user?.id };
+      const payload = { ...form, userId: user?._id };
       const res = await fetch("/api/coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,8 +55,9 @@ const ProfileSetupCoach = () => {
       <input name="name" placeholder="Name" value={form.name} onChange={handleChange} className="input mb-2 w-full" required />
       <textarea name="bio" placeholder="Bio" value={form.bio} onChange={handleChange} className="input mb-2 w-full" required />
       <input name="experience" placeholder="Experience (years)" value={form.experience} onChange={handleChange} className="input mb-2 w-full" required />
-      <input name="specialty" placeholder="Specialty" value={form.specialty} onChange={handleChange} className="input mb-2 w-full" required />
-  {/* Contact Email removed, not in schema */}
+      <input name="specialization" placeholder="Specialization" value={form.specialization} onChange={handleChange} className="input mb-2 w-full" required />
+      <input name="sport" placeholder="Sport" value={form.sport} onChange={handleChange} className="input mb-2 w-full" />
+      <input name="contactEmail" placeholder="Contact Email" value={form.contactEmail} onChange={handleChange} className="input mb-2 w-full" />
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>{loading ? "Saving..." : "Save Profile"}</button>
     </form>
   );

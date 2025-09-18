@@ -14,7 +14,9 @@ const Navbar: React.FC = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const unreadNotifications = notifications.filter(n => !n.read && n.userId === user?.id);
+  const unreadNotifications = Array.isArray(notifications)
+    ? notifications.filter(n => !n.read && n.userId === user?.id)
+    : [];
 
   const getRoleBasedLinks = () => {
     if (!user) return [];
