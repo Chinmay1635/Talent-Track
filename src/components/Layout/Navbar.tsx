@@ -23,7 +23,8 @@ const Navbar: React.FC = () => {
           { href: '/athlete/profile', label: 'My Profile' },
           { href: '/athlete/academies', label: 'Find Academies' },
           { href: '/athlete/tournaments', label: 'Tournaments' },
-          { href: '/athlete/training', label: 'Training' }
+          { href: '/athlete/training', label: 'Training' },
+          { href: '/athlete/chatbot', label: 'TalentTrackAI' }
         ];
       case 'coach':
         return [
@@ -66,7 +67,7 @@ const Navbar: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium${link.label === 'TalentTrackAI' ? ' font-bold text-blue-600' : ''}`}
               >
                 {link.label}
               </Link>
@@ -178,7 +179,7 @@ const Navbar: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                  className={`block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg${link.label === 'TalentTrackAI' ? ' font-bold text-blue-600' : ''}`}
                   onClick={() => setShowMobileMenu(false)}
                 >
                   {link.label}

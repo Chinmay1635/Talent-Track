@@ -7,7 +7,7 @@ const AcademyAthletes: React.FC = () => {
   const { user } = useAuth();
   const { academies, athletes, athleteProgress } = useData();
 
-  const academy = academies.find(a => a.userId === user?.id) || academies[0];
+  const academy = academies.length > 0 ? (academies.find(a => a.userId === user?._id) || academies[0]) : undefined;
   const academyAthletes = athletes.filter(a => a.academyId === academy?.id);
 
   // Add some dummy athletes for demonstration
