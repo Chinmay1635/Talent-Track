@@ -104,7 +104,7 @@ const AthleteChatbot: React.FC = () => {
                   Welcome to TalentTrack AI! 🏆
                 </h2>
                 <p className="text-gray-300 mb-4">
-                  I'm here to help with training, nutrition, motivation, and sports performance.
+                  I&apos;m here to help with training, nutrition, motivation, and sports performance.
                 </p>
                 <div className="grid grid-cols-2 gap-3 mt-6">
                   {[
