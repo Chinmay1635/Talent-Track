@@ -127,30 +127,150 @@ const AthleteProfile: React.FC = () => {
           )}
         </div>
 
-        {/* Edit Modal */}
-        {showEdit && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg relative">
-              <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowEdit(false)}>
-                &times;
-              </button>
-              <h2 className="text-2xl font-bold mb-4">Edit Athlete Profile</h2>
-              <form onSubmit={handleEditSubmit} className="space-y-4">
-                <input name="name" placeholder="Name" value={form.name} onChange={handleChange} className="input w-full" required />
-                <input name="age" placeholder="Age" value={form.age} onChange={handleChange} className="input w-full" required />
-                <input name="sport" placeholder="Sport" value={form.sport} onChange={handleChange} className="input w-full" required />
-                <input name="region" placeholder="Region" value={form.region} onChange={handleChange} className="input w-full" required />
-                <input name="level" placeholder="Level (Beginner/Intermediate/Pro)" value={form.level} onChange={handleChange} className="input w-full" required />
-                <textarea name="bio" placeholder="Bio" value={form.bio} onChange={handleChange} className="input w-full" required />
-                <input name="contactEmail" placeholder="Contact Email" value={form.contactEmail} onChange={handleChange} className="input w-full" />
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <div className="flex justify-end">
-                  <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? "Saving..." : "Save Changes"}</button>
-                </div>
-              </form>
-            </div>
-          </div>
+     {/* Edit Modal */}
+{showEdit && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg relative">
+      {/* Close Button */}
+      <button
+        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
+        onClick={() => setShowEdit(false)}
+      >
+        &times;
+      </button>
+
+      {/* Title */}
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        Edit Athlete Profile
+      </h2>
+
+      {/* Form */}
+      <form onSubmit={handleEditSubmit} className="space-y-5">
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Name
+          </label>
+          <input
+            name="name"
+            placeholder="Enter full name"
+            value={form.name}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Age */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Age
+          </label>
+          <input
+            name="age"
+            placeholder="Enter age"
+            value={form.age}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Sport */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Sport
+          </label>
+          <input
+            name="sport"
+            placeholder="Enter sport"
+            value={form.sport}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Region */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Region
+          </label>
+          <input
+            name="region"
+            placeholder="Enter region"
+            value={form.region}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Level */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Level
+          </label>
+          <input
+            name="level"
+            placeholder="Beginner / Intermediate / Pro"
+            value={form.level}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Bio */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Bio
+          </label>
+          <textarea
+            name="bio"
+            placeholder="Write a short bio"
+            value={form.bio}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Contact Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Contact Email
+          </label>
+          <input
+            type="email"
+            name="contactEmail"
+            placeholder="Enter email address"
+            value={form.contactEmail}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <p className="text-red-500 text-sm">{error}</p>
         )}
+
+        {/* Submit */}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
