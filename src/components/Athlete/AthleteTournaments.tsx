@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trophy, MapPin, Calendar, Users, Star, Filter, Search } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
+import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
 const AthleteTournaments: React.FC = () => {
   const [registerLoading, setRegisterLoading] = useState(false);
@@ -284,6 +285,8 @@ const AthleteTournaments: React.FC = () => {
             </div>
           </div>
         )}
+        {/* Global Floating Chatbot Button */}
+        <FloatingChatbotButton />
       </div>
     </div>
   );

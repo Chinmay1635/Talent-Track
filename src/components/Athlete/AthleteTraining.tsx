@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Users, Search, Calendar, User, X, Target, CheckCircle } from 'lucide-react';
+import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
 const AthleteTraining: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -199,6 +200,9 @@ const AthleteTraining: React.FC = () => {
             <p className="text-gray-500 mt-2">Loading training plans...</p>
           </div>
         )}
+
+        {/* Global Floating Chatbot Button */}
+        <FloatingChatbotButton />
 
         {/* Training Plan Details Modal */}
         {showModal && selectedPlan && (

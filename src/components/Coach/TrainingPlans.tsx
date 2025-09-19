@@ -238,8 +238,8 @@ const TrainingPlans: React.FC = () => {
                     <span className="text-sm">{plan.duration} weeks duration</span>
                   </div>
                   <div className="flex items-center text-gray-600">
-                    <Target className="h-4 w-4 mr-2" />
-                    <span className="text-sm">{plan.exercises.length} exercises</span>
+                      <Target className="h-4 w-4 mr-2" />
+                      <span className="text-sm">{Array.isArray(plan.exercises) ? plan.exercises.length : 0} exercises</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
@@ -251,15 +251,15 @@ const TrainingPlans: React.FC = () => {
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Exercises:</h4>
                   <div className="space-y-1">
-                    {plan.exercises.slice(0, 3).map((exercise: any, index: number) => (
-                      <div key={exercise.id} className="text-sm text-gray-600 flex items-center">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                        {exercise.name || `Exercise ${index + 1}`}
-                      </div>
-                    ))}
-                    {plan.exercises.length > 3 && (
-                      <div className="text-xs text-gray-500">+{plan.exercises.length - 3} more exercises</div>
-                    )}
+                      {Array.isArray(plan.exercises) && plan.exercises.slice(0, 3).map((exercise: any, index: number) => (
+                        <div key={exercise.id} className="text-sm text-gray-600 flex items-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                          {exercise.name || `Exercise ${index + 1}`}
+                        </div>
+                      ))}
+                      {Array.isArray(plan.exercises) && plan.exercises.length > 3 && (
+                        <div className="text-xs text-gray-500">+{plan.exercises.length - 3} more exercises</div>
+                      )}
                   </div>
                 </div>
 

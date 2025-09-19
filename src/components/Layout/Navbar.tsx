@@ -23,8 +23,7 @@ const Navbar: React.FC = () => {
           { href: '/athlete/profile', label: 'My Profile' },
           { href: '/athlete/academies', label: 'Find Academies' },
           { href: '/athlete/tournaments', label: 'Tournaments' },
-          { href: '/athlete/training', label: 'Training' },
-          { href: '/athlete/chatbot', label: 'TalentTrackAI' }
+          { href: '/athlete/training', label: 'Training' }
         ];
       case 'coach':
         return [

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, Star, Users, Trophy, Search, Filter, Building, Phone, Mail } from 'lucide-react';
 import { useData } from '../../context/DataContext';
+import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
 const AthleteAcademies: React.FC = () => {
   const { academies } = useData();
@@ -22,6 +23,7 @@ const AthleteAcademies: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <FloatingChatbotButton />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

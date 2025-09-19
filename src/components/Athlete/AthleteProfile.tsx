@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, Trophy, Star, Calendar, User, Award } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
 const AthleteProfile: React.FC = () => {
   const { user } = useAuth();
@@ -83,6 +84,7 @@ const AthleteProfile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <FloatingChatbotButton />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
