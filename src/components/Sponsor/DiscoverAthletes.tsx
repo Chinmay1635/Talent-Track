@@ -362,13 +362,17 @@ const DiscoverAthletes: React.FC = () => {
                         alert('No sponsor found.');
                         return;
                       }
-                      // Debug: log only athlete users and athleteName
-                      const athleteUsers = users?.filter((u: any) => u.role === 'athlete');
+                      // Debug: log all users and athlete users
+                      console.log('All Users:', users);
+                      const athleteUsers = Array.isArray(users)
+                        ? users.filter((u: any) => u.role === 'athlete')
+                        : [];
                       console.log('Athlete Users:', athleteUsers);
                       console.log('AthleteName:', topUpPopup.athleteName);
                       // Find athlete user by name (case-insensitive)
-                      const userAthlete = athleteUsers?.find(u =>
-                        (u as any).name?.toLowerCase() === topUpPopup.athleteName?.toLowerCase()
+                      const normalize = (str: string | null | undefined) => (str ?? '').trim().toLowerCase();
+                      const userAthlete = athleteUsers.find(u =>
+                        normalize(u.name) === normalize(topUpPopup.athleteName)
                       );
                       if (!userAthlete) {
                         alert('No athlete user found.');

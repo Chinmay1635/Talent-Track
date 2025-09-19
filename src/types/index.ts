@@ -78,10 +78,12 @@ export interface Badge {
 
 export interface TrainingPlan {
   id: string;
-  athleteId: string;
+  athleteId?: string; // Made optional since plans can be unassigned
   coachId: string;
   title: string;
   description: string;
+  sport: string;
+  level: 'beginner' | 'intermediate' | 'pro';
   exercises: Exercise[];
   duration: number; // in weeks
   createdAt: string;

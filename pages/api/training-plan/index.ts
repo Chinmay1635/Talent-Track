@@ -10,10 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (method === 'GET') {
     try {
         await dbConnect();
-        const plans = await TrainingPlan.find()
-          .populate('athlete')
-          .populate('coach')
-          .populate('exercises');
+        const plans = await TrainingPlan.find();
         res.status(200).json(plans);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -22,9 +19,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create training plan
     try {
       const data = req.body;
-        await dbConnect();
-        const created = await TrainingPlan.create(data);
-        res.status(201).json(created);
+      await dbConnect();
+      // Defensive: Only allow expected fields
+      const plan = await TrainingPlan.create({
+        athleteId: data.athleteId,
+        coachId: data.coachId,
+        title: data.title,
+        description: data.description,
+        exercises: data.exercises,
+        duration: data.duration,
+        createdAt: data.createdAt,
+        status: data.status
+      });
+      res.status(201).json(plan);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

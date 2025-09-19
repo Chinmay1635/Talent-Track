@@ -5,98 +5,91 @@ import { useData } from '../../context/DataContext';
 
 const TrainingPlans: React.FC = () => {
   const { user } = useAuth();
-  const { coaches, athletes, trainingPlans, addTrainingPlan } = useData();
+  const { coaches, athletes } = useData();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [newPlan, setNewPlan] = useState({
     title: '',
     description: '',
+    sport: '',
+    level: 'beginner' as 'beginner' | 'intermediate' | 'pro',
     duration: 4,
     exercises: [
       { id: '1', name: '', description: '', sets: 3, reps: 10, duration: 0, restTime: 60, completed: false }
     ]
   });
 
-  const coach = coaches.find(c => c.userId === user?.id) || coaches[0];
-  const myAthletes = athletes.filter(a => a.coachId === coach?.id);
+  console.log('Current user:', user);
+  console.log('Coaches:', coaches);
+  console.log('All athletes:', athletes);
+  const coach = coaches.find(c => (c as any).user && (c as any).user._id === user?._id) || coaches[0];
+  console.log('Found coach:', coach);
+  const myAthletes = Array.isArray(athletes) ? athletes.filter(a => a.coachId === coach?.id) : [];
+  console.log('My athletes:', myAthletes);
+  // console.log('Coach ID:', coach?.id, 'Athletes with coachId:', athletes.map(a => ({ name: a.name, coachId: a.coachId })));
+  const [trainingPlans, setTrainingPlans] = useState<any[]>([]);
+
+  // Fetch training plans from backend
+  React.useEffect(() => {
+    const fetchPlans = async () => {
+      const res = await fetch('/api/trainingPlan');
+      if (res.ok) {
+        const data = await res.json();
+        setTrainingPlans(data.plans || []);
+      }
+    };
+    fetchPlans();
+  }, [showCreateForm]);
+
   const myTrainingPlans = trainingPlans.filter(tp => tp.coachId === coach?.id);
+  const allPlans = myTrainingPlans;
 
-  // Add some dummy training plans
-  const dummyPlans = [
-    {
-      id: 'dummy-plan-1',
-      athleteId: 'dummy-1',
-      coachId: coach?.id || '',
-      title: 'Advanced Boxing Techniques',
-      description: 'Focus on advanced combinations and defensive techniques',
-      exercises: [
-        { id: '1', name: 'Combination Drills', description: 'Practice 1-2-3 combinations', sets: 5, reps: 20, duration: 0, restTime: 90, completed: false },
-        { id: '2', name: 'Defensive Footwork', description: 'Slip and counter movements', sets: 4, reps: 15, duration: 0, restTime: 60, completed: false },
-        { id: '3', name: 'Heavy Bag Power', description: 'Power punching on heavy bag', sets: 6, reps: 0, duration: 3, restTime: 120, completed: false }
-      ],
-      duration: 6,
-      createdAt: '2025-01-05',
-      status: 'active' as const
-    },
-    {
-      id: 'dummy-plan-2',
-      athleteId: 'dummy-2',
-      coachId: coach?.id || '',
-      title: 'Strength & Conditioning',
-      description: 'Build core strength and cardiovascular endurance',
-      exercises: [
-        { id: '1', name: 'Circuit Training', description: 'Full body circuit workout', sets: 3, reps: 0, duration: 15, restTime: 180, completed: false },
-        { id: '2', name: 'Core Strengthening', description: 'Planks, crunches, and rotations', sets: 4, reps: 25, duration: 0, restTime: 45, completed: false },
-        { id: '3', name: 'Cardio Boxing', description: 'High-intensity boxing cardio', sets: 3, reps: 0, duration: 10, restTime: 120, completed: false }
-      ],
-      duration: 8,
-      createdAt: '2025-01-03',
-      status: 'active' as const
-    },
-    {
-      id: 'dummy-plan-3',
-      athleteId: 'dummy-3',
-      coachId: coach?.id || '',
-      title: 'Competition Preparation',
-      description: 'Intensive training for upcoming tournament',
-      exercises: [
-        { id: '1', name: 'Sparring Sessions', description: 'Controlled sparring practice', sets: 3, reps: 0, duration: 5, restTime: 300, completed: false },
-        { id: '2', name: 'Speed Training', description: 'Speed bag and reaction drills', sets: 5, reps: 30, duration: 0, restTime: 60, completed: false },
-        { id: '3', name: 'Mental Preparation', description: 'Visualization and focus exercises', sets: 1, reps: 0, duration: 20, restTime: 0, completed: false }
-      ],
-      duration: 4,
-      createdAt: '2025-01-01',
-      status: 'completed' as const
-    }
-  ];
-
-  const allPlans = [...myTrainingPlans, ...dummyPlans];
-
-  const handleCreatePlan = (e: React.FormEvent) => {
+  const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPlan) return;
+    if (!(coach as any)._id) {
+      alert('No coach found. Please check your account or data.');
+      return;
+    }
 
-    addTrainingPlan({
-      athleteId: selectedPlan,
-      coachId: coach?.id || '',
+    const planData = {
+      // No athlete assignment - available to all athletes
+      coach: (coach as any)._id,
       title: newPlan.title,
       description: newPlan.description,
+      sport: newPlan.sport,
+      level: newPlan.level,
       exercises: newPlan.exercises,
       duration: newPlan.duration,
       createdAt: new Date().toISOString(),
       status: 'active'
+    };
+
+    console.log('planData being sent:', planData);
+
+    const res = await fetch('/api/trainingPlan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(planData)
     });
 
-    setNewPlan({
-      title: '',
-      description: '',
-      duration: 4,
-      exercises: [
-        { id: '1', name: '', description: '', sets: 3, reps: 10, duration: 0, restTime: 60, completed: false }
-      ]
-    });
-    setSelectedPlan('');
-    setShowCreateForm(false);
+    if (res.ok) {
+      setShowCreateForm(false);
+      setNewPlan({
+        title: '',
+        description: '',
+        sport: '',
+        level: 'beginner' as 'beginner' | 'intermediate' | 'pro',
+        duration: 4,
+        exercises: [
+          { id: '1', name: '', description: '', sets: 3, reps: 10, duration: 0, restTime: 60, completed: false }
+        ]
+      });
+      // Refetch plans
+      const data = await res.json();
+      setTrainingPlans(prev => [...prev, data.plan]);
+    } else {
+      // Handle error
+      alert('Failed to create training plan');
+    }
   };
 
   const addExercise = () => {
@@ -141,9 +134,8 @@ const TrainingPlans: React.FC = () => {
     }
   };
 
-  const getAthleteEnrolled = (planId: string) => {
-    const plan = allPlans.find(p => p.id === planId);
-    return myAthletes.find(a => a.id === plan?.athleteId)?.name || 'Unknown Athlete';
+  const getAthleteEnrolled = (_planId: string) => {
+    return 'Available to all athletes'; // Since plans are not assigned to specific athletes
   };
 
   return (
@@ -259,7 +251,7 @@ const TrainingPlans: React.FC = () => {
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Exercises:</h4>
                   <div className="space-y-1">
-                    {plan.exercises.slice(0, 3).map((exercise, index) => (
+                    {plan.exercises.slice(0, 3).map((exercise: any, index: number) => (
                       <div key={exercise.id} className="text-sm text-gray-600 flex items-center">
                         <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                         {exercise.name || `Exercise ${index + 1}`}
@@ -331,19 +323,40 @@ const TrainingPlans: React.FC = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Assign to Athlete</label>
-                    <select
-                      value={selectedPlan}
-                      onChange={(e) => setSelectedPlan(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    >
-                      <option value="">Select an athlete</option>
-                      {myAthletes.map(athlete => (
-                        <option key={athlete.id} value={athlete.id}>{athlete.name}</option>
-                      ))}
-                    </select>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sport</label>
+                      <select
+                        value={newPlan.sport}
+                        onChange={(e) => setNewPlan({...newPlan, sport: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        <option value="">Select Sport</option>
+                        <option value="Football">Football</option>
+                        <option value="Basketball">Basketball</option>
+                        <option value="Tennis">Tennis</option>
+                        <option value="Swimming">Swimming</option>
+                        <option value="Athletics">Athletics</option>
+                        <option value="Cricket">Cricket</option>
+                        <option value="Badminton">Badminton</option>
+                        <option value="Volleyball">Volleyball</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                      <select
+                        value={newPlan.level}
+                        onChange={(e) => setNewPlan({...newPlan, level: e.target.value as 'beginner' | 'intermediate' | 'pro'})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="pro">Pro</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div>

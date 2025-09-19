@@ -4,13 +4,34 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 
 const AthleteTournaments: React.FC = () => {
-  const { tournaments, registerForTournament, athletes } = useData();
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [successTournamentName, setSuccessTournamentName] = useState<string>('');
+  const { tournaments, athletes } = useData();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [sportFilter, setSportFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
+  const athleteList = Array.isArray(athletes) ? athletes : [];
+  const athlete = athleteList.find(a => a.userId === user?._id) || athleteList[0];
+  // ...existing code...
+  const [registrations, setRegistrations] = useState<any[]>([]);
 
-  const athlete = athletes.find(a => a.userId === user?.id) || athletes[0];
+  // Fetch athlete's registrations on mount and after registration
+  React.useEffect(() => {
+    async function fetchRegistrations() {
+      if (!athlete) return;
+      try {
+        const res = await fetch(`/api/tournament/registrations?athleteId=${athlete._id || athlete.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setRegistrations(data.registrations || []);
+        }
+      } catch {}
+    }
+    fetchRegistrations();
+  }, [athlete, registerSuccess]);
 
   const filteredTournaments = Array.isArray(tournaments)
     ? tournaments.filter(tournament => {
@@ -28,9 +49,46 @@ const AthleteTournaments: React.FC = () => {
     ? [...new Set(tournaments.map(t => t.sport))]
     : [];
 
-  const handleRegister = (tournamentId: string) => {
-    if (athlete) {
-      registerForTournament(tournamentId, athlete.id);
+  // ...existing code...
+
+  const handleRegister = async (tournamentId: string, tournamentName: string) => {
+    if (!athlete) return;
+    setRegisterLoading(true);
+    setRegisterError(null);
+    try {
+      const res = await fetch('/api/tournament/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tournamentId,
+          athleteId: athlete._id || athlete.id,
+          contact: user?.email ?? 'N/A',
+          additionalInfo: ''
+        })
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        setRegisterError(error.error || 'Registration failed.');
+        setRegisterLoading(false);
+        return;
+      }
+      setSuccessTournamentName(tournamentName);
+      setRegisterSuccess(true);
+      setRegisterLoading(false);
+      // Refetch registrations to update UI
+      try {
+        const res = await fetch(`/api/tournament/registrations?athleteId=${athlete._id || athlete.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setRegistrations(data.registrations || []);
+        }
+      } catch {}
+      setTimeout(() => {
+        setRegisterSuccess(false);
+      }, 1500);
+    } catch (err) {
+      setRegisterError('Error submitting registration.');
+      setRegisterLoading(false);
     }
   };
 
@@ -112,7 +170,7 @@ const AthleteTournaments: React.FC = () => {
         {/* Tournament Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTournaments.map((tournament) => (
-            <div key={tournament.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div key={tournament._id || tournament.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="p-6">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -168,20 +226,31 @@ const AthleteTournaments: React.FC = () => {
                   <div className="text-xs text-gray-500">
                     Register by: {new Date(tournament.registrationDeadline).toLocaleDateString()}
                   </div>
-                  {tournament.status === 'upcoming' && tournament.currentParticipants < tournament.maxParticipants ? (
-                    <button
-                      onClick={() => handleRegister(tournament.id)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      Register
-                    </button>
-                  ) : tournament.currentParticipants >= tournament.maxParticipants ? (
-                    <span className="text-red-600 text-sm font-medium">Full</span>
-                  ) : (
-                    <span className="text-gray-500 text-sm font-medium">
-                      {tournament.status === 'completed' ? 'Completed' : 'Ongoing'}
-                    </span>
-                  )}
+                  {(() => {
+                    const isRegistered = registrations.some(r => r.tournamentId === (tournament._id || tournament.id));
+                    if (isRegistered) {
+                      return (
+                        <button className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-default" disabled>
+                          Registered
+                        </button>
+                      );
+                    }
+                    if (tournament.status === 'upcoming' && tournament.currentParticipants < tournament.maxParticipants) {
+                      return (
+                        <button
+                          onClick={() => handleRegister(tournament._id || tournament.id, tournament.name)}
+                          className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ${registerLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          disabled={registerLoading}
+                        >
+                          {registerLoading ? 'Registering...' : 'Register'}
+                        </button>
+                      );
+                    }
+                    if (tournament.currentParticipants >= tournament.maxParticipants) {
+                      return <span className="text-red-600 text-sm font-medium">Full</span>;
+                    }
+                    return <span className="text-gray-500 text-sm font-medium">{tournament.status === 'completed' ? 'Completed' : 'Ongoing'}</span>;
+                  })()}
                 </div>
               </div>
             </div>
@@ -193,6 +262,26 @@ const AthleteTournaments: React.FC = () => {
             <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No tournaments found</h3>
             <p className="text-gray-500">Try adjusting your search criteria or check back later for new tournaments.</p>
+          </div>
+        )}
+
+        {/* Success Popup */}
+        {registerSuccess && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full text-center">
+              <Trophy className="h-10 w-10 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-green-700 mb-2">Successfully Registered!</h3>
+              <p className="text-gray-700 mb-2">You have registered for <span className="font-semibold">{successTournamentName}</span>.</p>
+            </div>
+          </div>
+        )}
+        {registerError && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full text-center">
+              <Trophy className="h-10 w-10 text-red-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-red-700 mb-2">Registration Failed</h3>
+              <p className="text-gray-700 mb-2">{registerError}</p>
+            </div>
           </div>
         )}
       </div>

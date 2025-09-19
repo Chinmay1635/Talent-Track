@@ -1,44 +1,63 @@
-import React, { useState } from 'react';
-import { Clock, MapPin, Users, Star, Search, Calendar, DollarSign, User } from 'lucide-react';
-import { useData } from '../../context/DataContext';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { Clock, Users, Search, Calendar, User, X, Target, CheckCircle } from 'lucide-react';
 
 const AthleteTraining: React.FC = () => {
-  const { trainingPrograms, enrollInTraining, athletes } = useData();
-  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [sportFilter, setSportFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
+  const [trainingPlans, setTrainingPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
 
-  const athlete = athletes.find(a => a.userId === user?.id) || athletes[0];
+  // Fetch training plans from backend
+  useEffect(() => {
+    const fetchTrainingPlans = async () => {
+      try {
+        const res = await fetch('/api/trainingPlan');
+        if (res.ok) {
+          const data = await res.json();
+          setTrainingPlans(data.plans || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch training plans:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTrainingPlans();
+  }, []);
 
-  const filteredPrograms = trainingPrograms.filter(program => {
-    const matchesSearch = program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         program.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSport = sportFilter === 'all' || program.sport === sportFilter;
-    const matchesLevel = levelFilter === 'all' || 
-                        program.level === 'All' || 
-                        program.level === levelFilter;
+  const filteredPlans = trainingPlans.filter(plan => {
+    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         plan.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSport = sportFilter === 'all' || plan.sport === sportFilter;
+    const matchesLevel = levelFilter === 'all' || plan.level === levelFilter;
     
     return matchesSearch && matchesSport && matchesLevel;
   });
 
-  const uniqueSports = [...new Set(trainingPrograms.map(p => p.sport))];
+  // Define available sports and levels
+  const availableSports = ['Football', 'Basketball', 'Tennis', 'Swimming', 'Athletics', 'Cricket', 'Badminton', 'Volleyball'];
+  const availableLevels = ['beginner', 'intermediate', 'pro'];
 
-  const handleEnroll = (programId: string) => {
-    if (athlete) {
-      enrollInTraining(programId, athlete.id);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'paused': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'Beginner': return 'bg-green-100 text-green-800';
-      case 'Intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'Pro': return 'bg-purple-100 text-purple-800';
-      case 'All': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const handleViewDetails = (plan: any) => {
+    setSelectedPlan(plan);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedPlan(null);
   };
 
   return (
@@ -46,11 +65,11 @@ const AthleteTraining: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Training Programs</h1>
-          <p className="text-gray-600">Enhance your skills with professional training programs</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Training Plans</h1>
+          <p className="text-gray-600">View and follow training plans created by your coaches</p>
         </div>
 
-        {/* Filters */}
+        {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
@@ -59,7 +78,7 @@ const AthleteTraining: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search training programs..."
+                  placeholder="Search training plans..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -67,18 +86,18 @@ const AthleteTraining: React.FC = () => {
               </div>
             </div>
 
-            {/* Sport Filter */}
+            {/* Status Filter */}
             <div className="md:w-48">
-              <select
-                value={sportFilter}
-                onChange={(e) => setSportFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Sports</option>
-                {uniqueSports.map(sport => (
-                  <option key={sport} value={sport}>{sport}</option>
-                ))}
-              </select>
+                          <select 
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={sportFilter}
+              onChange={(e) => setSportFilter(e.target.value)}
+            >
+              <option value="all">All Sports</option>
+              {availableSports.map(sport => (
+                <option key={sport} value={sport}>{sport}</option>
+              ))}
+            </select>
             </div>
 
             {/* Level Filter */}
@@ -89,108 +108,212 @@ const AthleteTraining: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All Levels</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Pro">Pro</option>
+                {availableLevels.map(level => (
+                  <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>
+                ))}
               </select>
             </div>
           </div>
         </div>
 
-        {/* Training Programs Grid */}
+        {/* Training Plans Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPrograms.map((program) => (
-            <div key={program.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          {filteredPlans.map((plan) => (
+            <div key={plan._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="p-6">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{program.title}</h3>
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <User className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{program.providerName}</span>
-                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{plan.title}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{plan.description}</p>
                   </div>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(program.level)}`}>
-                    <Star className="h-3 w-3 mr-1" />
-                    {program.level}
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status || 'active')}`}>
+                    {plan.status || 'active'}
                   </span>
                 </div>
 
                 {/* Details */}
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center text-gray-600">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span className="text-sm">{program.location}</span>
+                    <User className="h-4 w-4 mr-2" />
+                    <span className="text-sm">Coach Created</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <Clock className="h-4 w-4 mr-2" />
-                    <span className="text-sm">{program.duration} weeks • {program.schedule}</span>
+                    <span className="text-sm">{plan.duration || 4} weeks duration</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <Users className="h-4 w-4 mr-2" />
-                    <span className="text-sm">{program.currentParticipants}/{program.maxParticipants} enrolled</span>
+                    <span className="text-sm">{plan.exercises?.length || 0} exercises</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
-                    <span className="text-sm">Starts {new Date(program.startDate).toLocaleDateString()}</span>
+                    <span className="text-sm">Created {new Date(plan.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
 
-                {/* Description */}
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">{program.description}</p>
-
-                {/* Sport & Fees */}
-                <div className="flex items-center justify-between mb-4">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {program.sport}
-                  </span>
-                  <div className="flex items-center text-green-600 font-semibold">
-                    <DollarSign className="h-4 w-4 mr-1" />
-                    <span>{program.fees}</span>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
+                {/* Exercise Preview */}
                 <div className="mb-4">
-                  <div className="flex justify-between text-xs text-gray-600 mb-1">
-                    <span>Enrollment</span>
-                    <span>{Math.round((program.currentParticipants / program.maxParticipants) * 100)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${(program.currentParticipants / program.maxParticipants) * 100}%` }}
-                    ></div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Exercises:</h4>
+                  <div className="space-y-1">
+                    {plan.exercises?.slice(0, 3).map((exercise: any, index: number) => (
+                      <div key={exercise.id || index} className="text-sm text-gray-600 flex items-center">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                        {exercise.name || `Exercise ${index + 1}`}
+                      </div>
+                    ))}
+                    {plan.exercises?.length > 3 && (
+                      <div className="text-xs text-gray-500">+{plan.exercises.length - 3} more exercises</div>
+                    )}
                   </div>
                 </div>
 
                 {/* Action Button */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                   <div className="text-xs text-gray-500">
-                    {program.maxParticipants - program.currentParticipants} spots left
+                    
                   </div>
-                  {program.currentParticipants < program.maxParticipants ? (
-                    <button
-                      onClick={() => handleEnroll(program.id)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      Enroll Now
-                    </button>
-                  ) : (
-                    <span className="text-red-600 text-sm font-medium">Full</span>
-                  )}
+                  <button 
+                    onClick={() => handleViewDetails(plan)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {filteredPrograms.length === 0 && (
+        {filteredPlans.length === 0 && !loading && (
           <div className="text-center py-12">
             <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No training programs found</h3>
-            <p className="text-gray-500">Try adjusting your search criteria or check back later for new programs.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No training plans found</h3>
+            <p className="text-gray-500">No training plans are available yet. Check back later for new plans from your coaches.</p>
+          </div>
+        )}
+
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="text-gray-500 mt-2">Loading training plans...</p>
+          </div>
+        )}
+
+        {/* Training Plan Details Modal */}
+        {showModal && selectedPlan && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                {/* Modal Header */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedPlan.title}</h2>
+                    <p className="text-gray-600">{selectedPlan.description}</p>
+                  </div>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-400 hover:text-gray-600 p-1"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                {/* Plan Details */}
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <Clock className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Duration</p>
+                        <p className="text-sm text-gray-600">{selectedPlan.duration || 4} weeks</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <Target className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Total Exercises</p>
+                        <p className="text-sm text-gray-600">{selectedPlan.exercises?.length || 0} exercises</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <Calendar className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Created</p>
+                        <p className="text-sm text-gray-600">{new Date(selectedPlan.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <User className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Status</p>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedPlan.status || 'active')}`}>
+                          {selectedPlan.status || 'active'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Exercises List */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Exercises</h3>
+                  <div className="space-y-4">
+                    {selectedPlan.exercises?.map((exercise: any, index: number) => (
+                      <div key={exercise.id || index} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 mb-1">
+                              {exercise.name || `Exercise ${index + 1}`}
+                            </h4>
+                            <p className="text-sm text-gray-600">{exercise.description}</p>
+                          </div>
+                          <CheckCircle className="h-5 w-5 text-gray-300" />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium text-gray-700">Sets:</span>
+                            <span className="ml-1 text-gray-600">{exercise.sets || 0}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Reps:</span>
+                            <span className="ml-1 text-gray-600">{exercise.reps || 0}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Duration:</span>
+                            <span className="ml-1 text-gray-600">{exercise.duration || 0} min</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Rest:</span>
+                            <span className="ml-1 text-gray-600">{exercise.restTime || 0}s</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {(!selectedPlan.exercises || selectedPlan.exercises.length === 0) && (
+                      <div className="text-center py-8">
+                        <Target className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500">No exercises added to this plan yet.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="flex justify-end mt-6 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
