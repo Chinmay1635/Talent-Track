@@ -286,11 +286,11 @@ const AcademyAthletes: React.FC = () => {
                   </div>
 
                   {/* Action Button */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  {/* <div className="mt-4 pt-4 border-t border-gray-200">
                     <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                       View Full Profile
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             );

@@ -2,16 +2,53 @@ import React from 'react';
 import { Users, Target, Award, TrendingUp, Plus, Calendar, BarChart3, Edit } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import MyApplicationsList from '../Applications/MyApplicationsList';
+import AcademiesList from '../Applications/AcademiesList';
+
+// Define the application type for state
+interface Application {
+  _id: string;
+  academyId: { name: string };
+  message?: string;
+  status: string;
+  createdAt: string;
+}
 
 const CoachDashboard: React.FC = () => {
   const { user } = useAuth();
   const { coaches, athletes, trainingPlans, athleteProgress, awardBadgeToAthlete, updateAthleteLevel, updateAthleteProgress, badges } = useData();
+  const [applications, setApplications] = React.useState<Application[]>([]);
+  const [loadingApps, setLoadingApps] = React.useState(true);
+  const [academies, setAcademies] = React.useState<any[]>([]);
+  const [loadingAcademies, setLoadingAcademies] = React.useState(true);
 
   const coachList = Array.isArray(coaches) ? coaches : [];
   const coach = coachList.find(c => c.userId === user?._id) || coachList[0];
   const myAthletes = athletes.filter(a => a.coachId === coach?.id);
   const myTrainingPlans = trainingPlans.filter(tp => tp.coachId === coach?.id);
   const myAthleteProgress = athleteProgress.filter(ap => ap.coachId === coach?.id);
+
+  React.useEffect(() => {
+    if (user?._id) {
+      fetch(`/api/applications?coachId=${user._id}`)
+        .then(res => res.json())
+        .then(data => {
+          setApplications(Array.isArray(data) ? data : []);
+          setLoadingApps(false);
+        })
+        .catch(() => setLoadingApps(false));
+    }
+  }, [user?._id]);
+
+  React.useEffect(() => {
+    fetch('/api/academies')
+      .then(res => res.json())
+      .then(data => {
+        setAcademies(Array.isArray(data) ? data : []);
+        setLoadingAcademies(false);
+      })
+      .catch(() => setLoadingAcademies(false));
+  }, []);
 
   const handleAwardBadge = (athleteId: string, badgeId: string) => {
     awardBadgeToAthlete(athleteId, badgeId);
@@ -36,6 +73,26 @@ const CoachDashboard: React.FC = () => {
       case 'Intermediate': return 'Pro';
       default: return null;
     }
+  };
+
+  const hasActiveApplication = applications.some(app => app.status === 'pending' || app.status === 'accepted');
+
+  const handleApply = async (academyId: string, message: string) => {
+    if (!user?._id) return;
+    await fetch('/api/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coachId: user._id, academyId, message }),
+    });
+    // Refresh applications after applying
+    setLoadingApps(true);
+    fetch(`/api/applications?coachId=${user._id}`)
+      .then(res => res.json())
+      .then(data => {
+        setApplications(Array.isArray(data) ? data : []);
+        setLoadingApps(false);
+      })
+      .catch(() => setLoadingApps(false));
   };
 
   return (
@@ -268,6 +325,24 @@ const CoachDashboard: React.FC = () => {
                   <p className="text-gray-900">{coach?.specialization}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Academies List Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              {loadingAcademies ? (
+                <div className="text-gray-400">Loading academies...</div>
+              ) : (
+                <AcademiesList academies={academies} hasActiveApplication={hasActiveApplication} onApply={handleApply} />
+              )}
+            </div>
+
+            {/* My Applications Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              {loadingApps ? (
+                <div className="text-gray-400">Loading applications...</div>
+              ) : (
+                <MyApplicationsList applications={applications} />
+              )}
             </div>
 
             {/* Recent Training Plans */}

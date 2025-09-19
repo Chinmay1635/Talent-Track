@@ -9,8 +9,12 @@ const AcademyTournaments: React.FC = () => {
   const [selectedTournament, setSelectedTournament] = useState<string>('');
   const [showWinners, setShowWinners] = useState(false);
 
-  const academy = academies.find(a => a.userId === user?.id) || academies[0];
-  const academyTournaments = tournaments.filter(t => t.academyId === academy?.id);
+  // Defensive: ensure academies is always an array
+  const safeAcademies = Array.isArray(academies) ? academies : [];
+  const safeTournaments = Array.isArray(tournaments) ? tournaments : [];
+  const academy = safeAcademies.find(a => a.userId === user?._id) || safeAcademies[0];
+  // Use _id for MongoDB consistency
+  const academyTournaments = safeTournaments.filter(t => t.academyId === academy?._id || t.academyId === academy?.id);
 
   // Add some dummy tournaments for demonstration
   const dummyTournaments = [
@@ -67,6 +71,7 @@ const AcademyTournaments: React.FC = () => {
     }
   ];
 
+  // Show MongoDB tournaments first, then hardcoded
   const allTournaments = [...academyTournaments, ...dummyTournaments];
 
   // Dummy winners data
@@ -179,7 +184,97 @@ const AcademyTournaments: React.FC = () => {
 
         {/* Tournaments Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allTournaments.map((tournament) => (
+          {/* MongoDB tournaments */}
+          {academyTournaments.map((tournament) => (
+            <div key={tournament._id || tournament.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{tournament.name}</h3>
+                    <p className="text-sm text-gray-600">{tournament.sport}</p>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(tournament.status)}`}>
+                    {tournament.status}
+                  </span>
+                </div>
+
+                {/* Details */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center text-gray-600">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    <span className="text-sm">{tournament.location}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span className="text-sm">
+                      {tournament.startDate ? new Date(tournament.startDate).toLocaleDateString() : 'N/A'} - {tournament.endDate ? new Date(tournament.endDate).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Users className="h-4 w-4 mr-2" />
+                    <span className="text-sm">{tournament.currentParticipants}/{tournament.maxParticipants} participants</span>
+                  </div>
+                </div>
+
+                {/* Level & Prize */}
+                <div className="flex items-center justify-between mb-4">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(tournament.eligibilityLevel)}`}>
+                    {tournament.eligibilityLevel}
+                  </span>
+                  {tournament.prizePool && (
+                    <span className="text-sm font-semibold text-green-600">{tournament.prizePool}</span>
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{tournament.description}</p>
+
+                {/* Progress Bar */}
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Registration</span>
+                    <span>{tournament.maxParticipants ? Math.round((tournament.currentParticipants / tournament.maxParticipants) * 100) : 0}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        tournament.status === 'completed' ? 'bg-green-500' :
+                        tournament.status === 'ongoing' ? 'bg-blue-500' :
+                        'bg-yellow-500'
+                      }`}
+                      style={{ width: `${tournament.maxParticipants ? (tournament.currentParticipants / tournament.maxParticipants) * 100 : 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <div className="text-xs text-gray-500">
+                    {tournament.status === 'upcoming' && tournament.registrationDeadline ? `Reg. deadline: ${new Date(tournament.registrationDeadline).toLocaleDateString()}` : ''}
+                    {tournament.status === 'ongoing' && 'Tournament in progress'}
+                    {tournament.status === 'completed' && 'Tournament completed'}
+                  </div>
+                  {tournament.status === 'completed' && (
+                    <button
+                      onClick={() => handleViewWinners(tournament._id || tournament.id)}
+                      className="bg-yellow-600 text-white px-3 py-1 rounded text-xs font-medium hover:bg-yellow-700 transition-colors"
+                    >
+                      View Winners
+                    </button>
+                  )}
+                  {tournament.status !== 'completed' && (
+                    <button className="text-blue-600 hover:text-blue-700 text-xs font-medium">
+                      Manage
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Hardcoded dummy tournaments */}
+          {dummyTournaments.map((tournament) => (
             <div key={tournament.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="p-6">
                 {/* Header */}

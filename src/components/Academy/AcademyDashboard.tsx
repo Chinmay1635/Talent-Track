@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CoachSelectDropdown from './CoachSelectDropdown';
 import { Users, Trophy, Plus, Award, Building, Edit, Trash2, UserPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import ApplicationsList from '../Applications/ApplicationsList';
 
 // Type fixes for compatibility with MongoDB
 // ...existing code...
+
+// Define the application type for state
+interface CoachApplication {
+  _id: string;
+  coachId: { name: string; email: string };
+  message?: string;
+  status: string;
+  createdAt: string;
+}
 
 const AcademyDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -48,6 +58,10 @@ const AcademyDashboard: React.FC = () => {
   const [sportsLoading, setSportsLoading] = useState(false);
   const [sportsError, setSportsError] = useState<string | null>(null);
   const [sportsSuccess, setSportsSuccess] = useState(false);
+  const [coachApplications, setCoachApplications] = useState<CoachApplication[]>([]);
+  const [loadingApps, setLoadingApps] = useState(true);
+  const [populatedAcademy, setPopulatedAcademy] = useState<any>(null);
+  const [loadingPopulatedAcademy, setLoadingPopulatedAcademy] = useState(true);
 
   // Defensive: ensure academies is always an array
   if (!Array.isArray(academies)) academies = [];
@@ -58,6 +72,51 @@ const AcademyDashboard: React.FC = () => {
   if (!Array.isArray(coaches)) coaches = [];
   const academyCoaches = Array.isArray(coaches) ? coaches.filter(c => c.academyId === academy?._id || c.academyId === academy?.id) : [];
   const academyTournaments = Array.isArray(tournaments) ? tournaments.filter(t => t.academyId === academy?._id) : [];
+
+  React.useEffect(() => {
+    if (academy?._id) {
+      fetch(`/api/applications?academyId=${academy._id}`)
+        .then(res => res.json())
+        .then(data => {
+          setCoachApplications(Array.isArray(data) ? data : []);
+          setLoadingApps(false);
+        })
+        .catch(() => setLoadingApps(false));
+    }
+  }, [academy?._id]);
+
+  useEffect(() => {
+    if (academy?._id) {
+      fetch(`/api/academies/${academy._id}?populate=coaches`)
+        .then(res => res.json())
+        .then(data => {
+          setPopulatedAcademy(data);
+          setLoadingPopulatedAcademy(false);
+        })
+        .catch(() => setLoadingPopulatedAcademy(false));
+    }
+  }, [academy?._id, coachApplications]); // refetch when applications change
+
+  const handleStatusChange = async (id: string, status: 'accepted' | 'rejected') => {
+    try {
+      const res = await fetch(`/api/applications/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        // Refresh applications after status change
+        setLoadingApps(true);
+        fetch(`/api/applications?academyId=${academy._id}`)
+          .then(res => res.json())
+          .then(data => {
+            setCoachApplications(Array.isArray(data) ? data : []);
+            setLoadingApps(false);
+          })
+          .catch(() => setLoadingApps(false));
+      }
+    } catch {}
+  };
 
   const handleTournamentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +145,7 @@ const AcademyDashboard: React.FC = () => {
     setShowTournamentForm(false);
   };
 
-  const handleCoachSubmit = (e: React.FormEvent) => {
+const handleCoachSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!academy) return;
     // Always use selectedCoachUserId from dropdown
@@ -358,6 +417,16 @@ const AcademyDashboard: React.FC = () => {
               </div>
             </div>
 
+            {/* Coach Applications Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              {loadingApps ? (
+                <div className="text-gray-400">Loading coach applications...</div>
+              ) : (
+                <ApplicationsList applications={coachApplications} onStatusChange={handleStatusChange} />
+              )
+              }
+            </div>
+
             {/* Coaches */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
@@ -474,12 +543,14 @@ const AcademyDashboard: React.FC = () => {
                     />
                   </div>
 
+                  {/* Date constraints: prevent previous dates */}
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                       <input
                         type="date"
                         value={tournamentForm.startDate}
+                        min={new Date().toISOString().split('T')[0]}
                         onChange={(e) => setTournamentForm({...tournamentForm, startDate: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
@@ -491,6 +562,7 @@ const AcademyDashboard: React.FC = () => {
                       <input
                         type="date"
                         value={tournamentForm.endDate}
+                        min={tournamentForm.startDate || new Date().toISOString().split('T')[0]}
                         onChange={(e) => setTournamentForm({...tournamentForm, endDate: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
@@ -502,6 +574,7 @@ const AcademyDashboard: React.FC = () => {
                       <input
                         type="date"
                         value={tournamentForm.registrationDeadline}
+                        min={new Date().toISOString().split('T')[0]}
                         onChange={(e) => setTournamentForm({...tournamentForm, registrationDeadline: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
@@ -587,7 +660,7 @@ const AcademyDashboard: React.FC = () => {
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Coach</h2>
                 
-                <form onSubmit={handleCoachSubmit} className="space-y-4">
+<form onSubmit={handleCoachSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Select Registered Coach User</label>
                     <CoachSelectDropdown
@@ -680,21 +753,44 @@ const AcademyDashboard: React.FC = () => {
             <div className="bg-white rounded-xl max-w-md w-full">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Sports Offered</h2>
-                
                 {academyError && (
                   <div className="text-red-600 text-sm mb-2">{academyError}</div>
                 )}
                 <form onSubmit={handleSportsSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Sports (one per line)</label>
-                    <textarea
-                      value={newSports.join('\n')}
-                      onChange={(e) => setNewSports(e.target.value.split('\n').filter(s => s.trim()))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={6}
-                      placeholder="Boxing&#10;Cricket&#10;Badminton&#10;Football"
-                      disabled={sportsLoading || !!academyError}
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Sports</label>
+                    <div className="space-y-2">
+                      {newSports.map((sport, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={sport}
+                            onChange={e => {
+                              const updated = [...newSports];
+                              updated[idx] = e.target.value;
+                              setNewSports(updated);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder={`Sport #${idx + 1}`}
+                            disabled={sportsLoading || !!academyError}
+                          />
+                          <button
+                            type="button"
+                            className="text-red-500 px-2 py-1 rounded hover:bg-red-100"
+                            onClick={() => {
+                              setNewSports(newSports.filter((_, i) => i !== idx));
+                            }}
+                            disabled={sportsLoading || !!academyError}
+                          >Remove</button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                        onClick={() => setNewSports([...newSports, ''])}
+                        disabled={sportsLoading || !!academyError}
+                      >Add Another Sport</button>
+                    </div>
                   </div>
                   {sportsError && (
                     <div className="text-red-600 text-sm">{sportsError}</div>

@@ -10,6 +10,7 @@ export interface IAcademy extends Document {
   website?: string;
   establishedYear?: number;
   contactEmail?: string;
+  coaches?: mongoose.Types.ObjectId[];
   createdAt: Date;
 }
 
@@ -22,6 +23,7 @@ const AcademySchema: Schema<IAcademy> = new Schema({
   website: { type: String },
   establishedYear: { type: Number },
   contactEmail: { type: String },
+  coaches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Coach' }],
   createdAt: { type: Date, default: Date.now },
 });
 
