@@ -120,7 +120,7 @@ export const sampleCoaches: Coach[] = [
 
 export const sampleAcademies: Academy[] = [
   {
-    id: '1',
+    _id: '1',
     userId: 'user-academy-1',
     name: 'Mumbai Boxing Academy',
     location: 'Panvel, Mumbai',
@@ -134,7 +134,7 @@ export const sampleAcademies: Academy[] = [
     contactPhone: '+91-9876543210'
   },
   {
-    id: '2',
+    _id: '2',
     userId: 'user-academy-2',
     name: 'Maharashtra Badminton Center',
     location: 'Mumbai, Maharashtra',
@@ -148,7 +148,7 @@ export const sampleAcademies: Academy[] = [
     contactPhone: '+91-9876543211'
   },
   {
-    id: '3',
+    _id: '3',
     userId: 'user-academy-3',
     name: 'Gujarat Cricket Academy',
     location: 'Ahmedabad, Gujarat',
@@ -252,6 +252,8 @@ export const sampleTrainingPlans: TrainingPlan[] = [
     coachId: '1',
     title: 'Boxing Fundamentals - Week 1',
     description: 'Focus on basic punching techniques and footwork',
+    sport: 'Boxing',
+    level: 'beginner',
     exercises: sampleExercises,
     duration: 4,
     createdAt: '2025-01-01',

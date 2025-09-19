@@ -8,7 +8,7 @@ const AcademyLanding: React.FC = () => {
   const { user } = useAuth();
   const { academies, athletes, coaches, tournaments } = useData();
 
-  const academy = academies.find(a => a.userId === user?.id) || academies[0];
+  const academy = academies.find(a => a.userId === user?._id) || academies[0];
   const academyAthletes = athletes.filter(a => a.academyId === academy?.id);
   const academyCoaches = coaches.filter(c => c.academyId === academy?.id);
   const academyTournaments = tournaments.filter(t => t.academyId === academy?.id);

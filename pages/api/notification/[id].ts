@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Notification from '../../../src/models/Notification';
 
 // GET /api/notification/[id] - Get notification by ID
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,12 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const notification = await prisma.notification.findUnique({
-        where: { id: id as string },
-        include: {
-          user: true,
-        },
-      });
+      await dbConnect();
+      const notification = await Notification.findById(id);
       if (!notification) return res.status(404).json({ error: 'Notification not found' });
       res.status(200).json(notification);
     } catch (error) {
@@ -23,10 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Update notification
     try {
       const data = req.body;
-      const updated = await prisma.notification.update({
-        where: { id: id as string },
-        data,
-      });
+      await dbConnect();
+      const updated = await Notification.findByIdAndUpdate(id, data, { new: true });
       res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -34,7 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (method === 'DELETE') {
     // Delete notification
     try {
-      await prisma.notification.delete({ where: { id: id as string } });
+      await dbConnect();
+      await Notification.findByIdAndDelete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

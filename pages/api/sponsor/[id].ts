@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Sponsor from '../../../src/models/Sponsor';
 
 // GET /api/sponsor/[id] - Get sponsor by ID
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,13 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const sponsor = await prisma.sponsor.findUnique({
-        where: { id: id as string },
-        include: {
-          user: true,
-          tournamentWinners: true,
-        },
-      });
+      await dbConnect();
+      const sponsor = await Sponsor.findById(id).populate('user').populate('tournamentWinners');
       if (!sponsor) return res.status(404).json({ error: 'Sponsor not found' });
       res.status(200).json(sponsor);
     } catch (error) {
@@ -24,10 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Update sponsor
     try {
       const data = req.body;
-      const updated = await prisma.sponsor.update({
-        where: { id: id as string },
-        data,
-      });
+      await dbConnect();
+      const updated = await Sponsor.findByIdAndUpdate(id, data, { new: true });
       res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -35,7 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (method === 'DELETE') {
     // Delete sponsor
     try {
-      await prisma.sponsor.delete({ where: { id: id as string } });
+      await dbConnect();
+      await Sponsor.findByIdAndDelete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

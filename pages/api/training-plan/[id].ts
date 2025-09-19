@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import TrainingPlan from '../../../src/models/TrainingPlan';
 
 // GET /api/training-plan/[id] - Get training plan by ID
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,14 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const plan = await prisma.trainingPlan.findUnique({
-        where: { id: id as string },
-        include: {
-          athlete: true,
-          coach: true,
-          exercises: true,
-        },
-      });
+      await dbConnect();
+      const plan = await TrainingPlan.findById(id);
       if (!plan) return res.status(404).json({ error: 'Training plan not found' });
       res.status(200).json(plan);
     } catch (error) {
@@ -25,10 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Update training plan
     try {
       const data = req.body;
-      const updated = await prisma.trainingPlan.update({
-        where: { id: id as string },
-        data,
-      });
+      await dbConnect();
+      const updated = await TrainingPlan.findByIdAndUpdate(id, data, { new: true });
       res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -36,7 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (method === 'DELETE') {
     // Delete training plan
     try {
-      await prisma.trainingPlan.delete({ where: { id: id as string } });
+      await dbConnect();
+      await TrainingPlan.findByIdAndDelete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

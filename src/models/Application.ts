@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema, Document, Types, Model } from 'mongoose';
 
 export interface IApplication extends Document {
   coachId: Types.ObjectId;
@@ -16,4 +16,6 @@ const ApplicationSchema = new Schema<IApplication>({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.Application || mongoose.model<IApplication>('Application', ApplicationSchema);
+const Application: Model<IApplication> = mongoose.models.Application || mongoose.model<IApplication>('Application', ApplicationSchema);
+
+export default Application;

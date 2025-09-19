@@ -9,7 +9,7 @@ const CoachLanding: React.FC = () => {
   const { coaches, athletes, tournaments, trainingPlans } = useData();
 
   const coach = Array.isArray(coaches) && coaches.length > 0
-    ? coaches.find(c => c.userId === user?.id) || coaches[0]
+    ? coaches.find(c => c.userId === user?._id) || coaches[0]
     : undefined;
 
   const myAthletes = Array.isArray(athletes) && coach?.id

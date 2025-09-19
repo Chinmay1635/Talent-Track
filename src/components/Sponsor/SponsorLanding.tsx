@@ -8,7 +8,7 @@ const SponsorLanding: React.FC = () => {
   const { user } = useAuth();
   const { sponsors, tournaments, athletes, tournamentWinners } = useData();
 
-  const sponsor = sponsors.find(s => s.userId === user?.id) || sponsors[0];
+  const sponsor = sponsors.find(s => s.userId === user?._id) || sponsors[0];
   const sponsoredTournaments = Array.isArray(tournaments)
     ? tournaments.filter(t => sponsor?.sponsoredTournaments.includes(t.id))
     : [];

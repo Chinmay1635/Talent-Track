@@ -8,7 +8,7 @@ const TopPerformers: React.FC = () => {
   const { user } = useAuth();
   const [selectedTournament, setSelectedTournament] = useState('');
 
-  const sponsor = sponsors.find(s => s.userId === user?.id) || sponsors[0];
+  const sponsor = sponsors.find(s => s.userId === user?._id) || sponsors[0];
   const completedTournaments = Array.isArray(tournaments)
     ? tournaments.filter(t => t.status === 'completed')
     : [];

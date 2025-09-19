@@ -14,7 +14,7 @@ const SponsorDashboard: React.FC = () => {
   const [sponsorAmount, setSponsorAmount] = useState('');
 
   const sponsor = Array.isArray(sponsors) && sponsors.length > 0
-    ? sponsors.find(s => s.userId === user?.id) || sponsors[0]
+    ? sponsors.find(s => s.userId === user?._id) || sponsors[0]
     : undefined;
 
   const filteredTournaments = Array.isArray(tournaments)

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../src/lib/prisma';
+import dbConnect from '../../../src/lib/mongodb';
+import Badge from '../../../src/models/Badge';
 
 // GET /api/badge/[id] - Get badge by ID
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,12 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (method === 'GET') {
     try {
-      const badge = await prisma.badge.findUnique({
-        where: { id: id as string },
-        include: {
-          athleteBadges: true,
-        },
-      });
+      await dbConnect();
+      const badge = await Badge.findById(id);
       if (!badge) return res.status(404).json({ error: 'Badge not found' });
       res.status(200).json(badge);
     } catch (error) {
@@ -23,10 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Update badge
     try {
       const data = req.body;
-      const updated = await prisma.badge.update({
-        where: { id: id as string },
-        data,
-      });
+      await dbConnect();
+      const updated = await Badge.findByIdAndUpdate(id, data, { new: true });
       res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -34,7 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (method === 'DELETE') {
     // Delete badge
     try {
-      await prisma.badge.delete({ where: { id: id as string } });
+      await dbConnect();
+      await Badge.findByIdAndDelete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id as string,
         { status },
         { new: true }
-      ).exec();
+      );
       if (!app) return res.status(404).json({ error: 'Application not found.' });
 
       if (status === 'accepted') {
