@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Star, MapPin, Award, Briefcase, Phone, Mail, Calendar, Search, Navigation } from 'lucide-react';
+import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
 // Type definitions
 interface Doctor {
@@ -121,6 +122,7 @@ const AthleteInjuries: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <FloatingChatbotButton />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
