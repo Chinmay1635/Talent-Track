@@ -367,7 +367,7 @@ const AcademyTournaments: React.FC = () => {
           <div className="text-center py-12">
             <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No tournaments yet</h3>
-            <p className="text-gray-500">Start hosting tournaments to showcase your academy's talent.</p>
+            <p className="text-gray-500">Start hosting tournaments to showcase your academy&apos;s talent.</p>
           </div>
         )}
 

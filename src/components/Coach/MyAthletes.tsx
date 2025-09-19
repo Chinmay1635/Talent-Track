@@ -143,7 +143,7 @@ const MyAthletes: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Athletes</h1>
-          <p className="text-gray-600">Track and manage your athletes' progress</p>
+          <p className="text-gray-600">Track and manage your athletes&apos; progress</p>
         </div>
 
         {/* Stats Overview */}

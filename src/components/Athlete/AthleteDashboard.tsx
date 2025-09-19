@@ -241,7 +241,7 @@ const AthleteDashboard: React.FC = () => {
                 <p className="text-yellow-700 font-medium mb-2">{athleteOfMonth.sport}</p>
                 <p className="text-sm text-gray-600 mb-3">{athleteOfMonth.achievements}</p>
                 <blockquote className="text-sm italic text-gray-700 border-l-2 border-yellow-400 pl-3">
-                  "{athleteOfMonth.quote}"
+                  &ldquo;{athleteOfMonth.quote}&rdquo;
                 </blockquote>
               </div>
             </div>
@@ -291,7 +291,7 @@ const AthleteDashboard: React.FC = () => {
         </div>
       </div>
       {/* Floating Chatbot Button */}
-      <a
+      <Link
         href="/athlete/chatbot"
         className="fixed bottom-8 right-8 z-50"
         title="Chat with Talent Track AI"
@@ -317,7 +317,7 @@ const AthleteDashboard: React.FC = () => {
             TalentTrack AI
           </span>
         </div>
-      </a>
+      </Link>
     </div>
   );
 };
