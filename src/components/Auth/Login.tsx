@@ -25,7 +25,7 @@ const Login: React.FC = () => {
       // Navigate based on role (no Prisma logic)
       switch (role) {
         case 'athlete':
-          router.push('/athlete/profile');
+          router.push('/athlete/dashboard');
           break;
         case 'coach':
           router.push('/coach/dashboard');
