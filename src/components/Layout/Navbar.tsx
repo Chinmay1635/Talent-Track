@@ -20,7 +20,7 @@ const Navbar: React.FC = () => {
     switch (user.role) {
       case 'athlete':
         return [
-          { href: '/athlete/profile', label: 'My Profile' },
+          { href: '/athlete/dashboard', label: 'Dashboard' },
           { href: '/athlete/academies', label: 'Find Academies' },
           { href: '/athlete/tournaments', label: 'Tournaments' },
           { href: '/athlete/training', label: 'Training' },
@@ -126,9 +126,13 @@ const Navbar: React.FC = () => {
                     <p className="text-sm font-medium text-gray-900">{user.name}</p>
                     <p className="text-xs text-gray-500 capitalize">{user.role}</p>
                   </div>
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Link 
+                    href={`/${user.role}/profile`}
+                    className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors cursor-pointer"
+                    title="View Profile"
+                  >
                     <User className="h-4 w-4 text-blue-600" />
-                  </div>
+                  </Link>
                     <button
                       className="p-2 text-gray-600 hover:text-red-600 transition-colors"
                       title="Logout"
