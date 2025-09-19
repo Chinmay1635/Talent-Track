@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/dbConnect';
 import Registration from '../../../src/models/Registration';
+import Tournament from '../../../src/models/Tournament';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await dbConnect();
@@ -11,8 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     let registrations = [];
     if (academyId) {
-  // Import Tournament model
-  const Tournament = require('../../../src/models/Tournament').default;
       // Find tournaments for this academy
       const tournaments = await Tournament.find({ academyId }).select('_id').lean();
       const tournamentIds = tournaments.map(t => t._id.toString());
