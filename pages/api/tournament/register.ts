@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import mongoose from 'mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import Tournament from '../../../src/models/Tournament';
 import Athlete from '../../../src/models/Athlete';
@@ -26,20 +27,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(409).json({ error: 'Tournament is full' });
     }
     // Check if already registered
-  const existing = await Registration.findOne({ tournamentId, athleteId }).exec();
+    const existing = await Registration.findOne({ tournamentId, athleteId });
     if (existing) {
       return res.status(409).json({ error: 'Already registered' });
     }
     // Create registration and update participant count atomically
-    const session = await Registration.startSession();
+    const session = await mongoose.startSession();
     session.startTransaction();
     try {
-      const registration = await Registration.create({
+      const registration = await Registration.create([{
         tournamentId,
         athleteId,
         contact,
         additionalInfo
-      }, { session });
+      }], { session });
       await Tournament.findByIdAndUpdate(
         tournamentId,
         { $inc: { currentParticipants: 1 } },
@@ -47,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       );
       await session.commitTransaction();
       session.endSession();
-      return res.status(201).json({ success: true, registration });
+      return res.status(201).json({ success: true, registration: registration[0] });
     } catch (err) {
       await session.abortTransaction();
       session.endSession();

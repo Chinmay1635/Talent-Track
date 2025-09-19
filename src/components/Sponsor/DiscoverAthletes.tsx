@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Award, Star, MapPin, Trophy, DollarSign, Filter } from 'lucide-react';
+import { Search, Award, Star, MapPin, Trophy, DollarSign } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 
 const DiscoverAthletes: React.FC = () => {
-  const { athletes, tournaments, sponsors } = useData();
+  const { athletes, sponsors } = useData();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [sportFilter, setSportFilter] = useState('all');
@@ -21,7 +21,7 @@ const DiscoverAthletes: React.FC = () => {
   const [currentSponsor, setCurrentSponsor] = useState<any>(null);
   const [sponsorNeedsCreation, setSponsorNeedsCreation] = useState(false);
   React.useEffect(() => {
-    const userId = user?._id || user?.id || user?.userId;
+    const userId = user?._id;
     if (Array.isArray(sponsors) && sponsors.length > 0 && userId) {
       const foundSponsor = sponsors.find((s: any) => s.userId === userId);
       if (foundSponsor) {
@@ -106,8 +106,8 @@ const DiscoverAthletes: React.FC = () => {
         return acc;
       }, []);
       // Only keep athletes in the users array
-      const athleteOnlyUsers = mergedUsers.filter(u => u.role === 'athlete');
-  setUsers(athleteOnlyUsers);
+      const athleteOnlyUsers = mergedUsers.filter((u: any) => u.role === 'athlete');
+      setUsers(athleteOnlyUsers);
     };
 
     fetchData();
@@ -404,9 +404,21 @@ const DiscoverAthletes: React.FC = () => {
                   >
                     Cancel
                   </button>
+                  {mailStatus && (
+                    <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
+                      {mailStatus}
+                    </div>
+                  )}
                 </>
               ) : (
-                <p className="text-green-600 font-semibold text-lg">Sponsorship Confirmed</p>
+                <>
+                  <p className="text-green-600 font-semibold text-lg">Sponsorship Confirmed</p>
+                  {mailStatus && (
+                    <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-700">
+                      {mailStatus}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

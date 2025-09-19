@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IRegistration extends Document {
   tournamentId: string;
@@ -8,7 +8,7 @@ export interface IRegistration extends Document {
   createdAt: Date;
 }
 
-const RegistrationSchema: Schema = new Schema({
+const RegistrationSchema: Schema<IRegistration> = new Schema({
   tournamentId: { type: String, required: true },
   athleteId: { type: String, required: true },
   contact: { type: String, required: true },
@@ -16,4 +16,6 @@ const RegistrationSchema: Schema = new Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.models.Registration || mongoose.model<IRegistration>('Registration', RegistrationSchema);
+const Registration: Model<IRegistration> = mongoose.models.Registration || mongoose.model<IRegistration>('Registration', RegistrationSchema);
+
+export default Registration;
