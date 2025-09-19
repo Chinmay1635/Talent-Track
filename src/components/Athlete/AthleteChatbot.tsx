@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
+import Navbar from '../Layout/Navbar';
 
 const ROLE_PREPROMPT = `
-You are AthleteChatbot, a supportive and knowledgeable AI assistant for athletes of all levels. 
+You are Athlete , a supportive and knowledgeable AI assistant for athletes of all levels. 
 Your role is to:
 - Give clear, practical advice on training, recovery, nutrition, mindset, and sports science.  
 - Motivate athletes with encouraging words and actionable tips that build discipline and confidence.  
@@ -84,21 +85,9 @@ const AthleteChatbot: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 to-slate-800">
-      <div className="h-full max-w-4xl mx-auto flex flex-col p-4">
-        {/* Header */}
-        <header className="flex items-center justify-between py-4 px-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white border-2 border-blue-600">
-              <img src="/talent-track-logo.png" alt="Talent Track Logo" className="w-8 h-8 object-cover rounded-full" />
-            </div>
-            <h1 className="text-xl font-bold text-white">TalentTrack AI</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-400"></div>
-            <span className="text-sm text-gray-300">Online</span>
-          </div>
-        </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <Navbar />
+      <div className="h-full max-w-4xl mx-auto flex flex-col p-4 pt-20">
 
         {/* Chat Window */}
         <div
