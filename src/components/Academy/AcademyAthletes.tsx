@@ -11,83 +11,85 @@ const AcademyAthletes: React.FC = () => {
   const academyAthletes = athletes.filter(a => a.academyId === academy?.id);
 
   // Add some dummy athletes for demonstration
-  const dummyAthletes = [
-    {
-      id: 'academy-dummy-1',
-      userId: 'user-academy-dummy-1',
-      name: 'Vikram Singh',
-      sport: 'Boxing',
-      region: 'Mumbai',
-      level: 'Pro' as const,
-      badges: [
-        { id: '1', name: 'State Champion', description: 'Won state championship', icon: '🏆', category: 'achievement' as const, rarity: 'epic' as const },
-        { id: '2', name: 'Fitness Star', description: 'Completed 100 training sessions', icon: '⭐', category: 'skill' as const, rarity: 'rare' as const }
-      ],
-      academyId: academy?.id,
-      age: 23,
-      profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
-    },
-    {
-      id: 'academy-dummy-2',
-      userId: 'user-academy-dummy-2',
-      name: 'Anjali Kumari',
-      sport: 'Boxing',
-      region: 'Mumbai',
-      level: 'Intermediate' as const,
-      badges: [
-        { id: '3', name: 'Fast Learner', description: 'Mastered 5 new techniques', icon: '🚀', category: 'skill' as const, rarity: 'rare' as const }
-      ],
-      academyId: academy?.id,
-      age: 19,
-      profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
-    },
-    {
-      id: 'academy-dummy-3',
-      userId: 'user-academy-dummy-3',
-      name: 'Rahul Sharma',
-      sport: 'Boxing',
-      region: 'Mumbai',
-      level: 'Beginner' as const,
-      badges: [
-        { id: '4', name: 'Team Player', description: 'Participated in 10 team events', icon: '🤝', category: 'participation' as const, rarity: 'common' as const }
-      ],
-      academyId: academy?.id,
-      age: 18,
-      profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
-    },
-    {
-      id: 'academy-dummy-4',
-      userId: 'user-academy-dummy-4',
-      name: 'Pooja Devi',
-      sport: 'Boxing',
-      region: 'Mumbai',
-      level: 'Intermediate' as const,
-      badges: [
-        { id: '2', name: 'Fitness Star', description: 'Completed 100 training sessions', icon: '⭐', category: 'skill' as const, rarity: 'rare' as const },
-        { id: '4', name: 'Team Player', description: 'Participated in 10 team events', icon: '🤝', category: 'participation' as const, rarity: 'common' as const }
-      ],
-      academyId: academy?.id,
-      age: 20,
-      profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
-    },
-    {
-      id: 'academy-dummy-5',
-      userId: 'user-academy-dummy-5',
-      name: 'Suresh Kumar',
-      sport: 'Boxing',
-      region: 'Mumbai',
-      level: 'Pro' as const,
-      badges: [
-        { id: '1', name: 'State Champion', description: 'Won state championship', icon: '🏆', category: 'achievement' as const, rarity: 'epic' as const },
-        { id: '5', name: 'Dedication Award', description: 'Perfect attendance for 6 months', icon: '💪', category: 'special' as const, rarity: 'legendary' as const }
-      ],
-      academyId: academy?.id,
-      age: 24,
-      profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
-    }
-  ];
+  // const dummyAthletes = [
+  //   {
+  //     id: 'academy-dummy-1',
+  //     userId: 'user-academy-dummy-1',
+  //     name: 'Vikram Singh',
+  //     sport: 'Boxing',
+  //     region: 'Mumbai',
+  //     level: 'Pro' as const,
+  //     badges: [
+  //       { id: '1', name: 'State Champion', description: 'Won state championship', icon: '🏆', category: 'achievement' as const, rarity: 'epic' as const },
+  //       { id: '2', name: 'Fitness Star', description: 'Completed 100 training sessions', icon: '⭐', category: 'skill' as const, rarity: 'rare' as const }
+  //     ],
+  //     academyId: academy?.id,
+  //     age: 23,
+  //     profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
+  //   },
+  //   {
+  //     id: 'academy-dummy-2',
+  //     userId: 'user-academy-dummy-2',
+  //     name: 'Anjali Kumari',
+  //     sport: 'Boxing',
+  //     region: 'Mumbai',
+  //     level: 'Intermediate' as const,
+  //     badges: [
+  //       { id: '3', name: 'Fast Learner', description: 'Mastered 5 new techniques', icon: '🚀', category: 'skill' as const, rarity: 'rare' as const }
+  //     ],
+  //     academyId: academy?.id,
+  //     age: 19,
+  //     profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
+  //   },
+  //   {
+  //     id: 'academy-dummy-3',
+  //     userId: 'user-academy-dummy-3',
+  //     name: 'Rahul Sharma',
+  //     sport: 'Boxing',
+  //     region: 'Mumbai',
+  //     level: 'Beginner' as const,
+  //     badges: [
+  //       { id: '4', name: 'Team Player', description: 'Participated in 10 team events', icon: '🤝', category: 'participation' as const, rarity: 'common' as const }
+  //     ],
+  //     academyId: academy?.id,
+  //     age: 18,
+  //     profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
+  //   },
+  //   {
+  //     id: 'academy-dummy-4',
+  //     userId: 'user-academy-dummy-4',
+  //     name: 'Pooja Devi',
+  //     sport: 'Boxing',
+  //     region: 'Mumbai',
+  //     level: 'Intermediate' as const,
+  //     badges: [
+  //       { id: '2', name: 'Fitness Star', description: 'Completed 100 training sessions', icon: '⭐', category: 'skill' as const, rarity: 'rare' as const },
+  //       { id: '4', name: 'Team Player', description: 'Participated in 10 team events', icon: '🤝', category: 'participation' as const, rarity: 'common' as const }
+  //     ],
+  //     academyId: academy?.id,
+  //     age: 20,
+  //     profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
+  //   },
+  //   {
+  //     id: 'academy-dummy-5',
+  //     userId: 'user-academy-dummy-5',
+  //     name: 'Suresh Kumar',
+  //     sport: 'Boxing',
+  //     region: 'Mumbai',
+  //     level: 'Pro' as const,
+  //     badges: [
+  //       { id: '1', name: 'State Champion', description: 'Won state championship', icon: '🏆', category: 'achievement' as const, rarity: 'epic' as const },
+  //       { id: '5', name: 'Dedication Award', description: 'Perfect attendance for 6 months', icon: '💪', category: 'special' as const, rarity: 'legendary' as const }
+  //     ],
+  //     academyId: academy?.id,
+  //     age: 24,
+  //     profileImage: 'https://images.pexels.com/photos/8007513/pexels-photo-8007513.jpeg?auto=compress&cs=tinysrgb&w=200'
+  //   }
+  // ];
 
-  const allAthletes = [...academyAthletes, ...dummyAthletes];
+  // const allAthletes = [...academyAthletes, ...dummyAthletes];
+
+  const allAthletes = [...academyAthletes];
 
   // Dummy performance stats
   const performanceStats = [
