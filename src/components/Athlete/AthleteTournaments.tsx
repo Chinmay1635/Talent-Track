@@ -212,7 +212,7 @@ const AthleteTournaments: React.FC = () => {
                     {tournament.eligibilityLevel}
                   </span>
                   {tournament.prizePool && (
-                    <span className="text-sm font-semibold text-green-600">{tournament.prizePool}</span>
+                    <span className="text-sm font-semibold text-green-600">₹{Number(tournament.prizePool).toLocaleString('en-IN')}</span>
                   )}
                 </div>
 

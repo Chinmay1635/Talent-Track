@@ -1,0 +1,69 @@
+/* Generalized styles for consistent dark dashboard UI */
+
+.bg-dashboard {
+  @apply bg-gradient-to-br from-slate-900 to-slate-800;
+}
+
+.card-dashboard {
+  @apply bg-slate-800 rounded-xl border border-slate-700;
+}
+
+.card-header {
+  @apply text-white font-bold;
+}
+
+.card-subtext {
+  @apply text-gray-400;
+}
+
+.card-section {
+  @apply p-6;
+}
+
+.card-section-lg {
+  @apply p-8;
+}
+
+.card-link {
+  @apply text-blue-400 hover:text-blue-300 font-medium transition-colors;
+}
+
+.card-btn {
+  @apply px-4 py-2 rounded-lg border border-blue-400 text-blue-400 bg-slate-900 hover:bg-slate-800 font-semibold transition-colors;
+}
+
+.card-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-800 text-blue-400 border border-blue-400;
+}
+
+.card-section-dark {
+  @apply bg-slate-700 rounded-lg border border-slate-600;
+}
+
+.card-section-green {
+  @apply bg-green-900 bg-opacity-20 rounded-lg border border-green-800;
+}
+
+.card-section-yellow {
+  @apply bg-yellow-900 bg-opacity-20 rounded-lg border border-yellow-800;
+}
+
+.card-section-purple {
+  @apply bg-purple-900 bg-opacity-20 rounded-lg border border-purple-800;
+}
+
+.card-section-blue {
+  @apply bg-blue-900 bg-opacity-30 rounded-lg border border-blue-800;
+}
+
+.card-section-gradient {
+  @apply bg-gradient-to-br from-yellow-600 to-orange-600 rounded-full;
+}
+
+.card-section-sidebar {
+  @apply space-y-8;
+}
+
+.card-section-main {
+  @apply space-y-8;
+}
