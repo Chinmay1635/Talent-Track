@@ -10,21 +10,54 @@ const DiscoverAthletes: React.FC = () => {
   const [sportFilter, setSportFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const [regionFilter, setRegionFilter] = useState('all');
+  const [users, setUsers] = useState<any[]>([]);
+  const [mailStatus, setMailStatus] = useState<string | null>(null);
 
-  const sponsor = sponsors.find(s => s.userId === user?.id) || sponsors[0];
+  // Popup state for top-up/sponsorship
+  const [topUpPopup, setTopUpPopup] = useState<{ show: boolean, athleteName: string | null, confirmed: boolean }>({ show: false, athleteName: null, confirmed: false });
 
-  const filteredAthletes = athletes.filter(athlete => {
-    const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         athlete.region.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSport = sportFilter === 'all' || athlete.sport === sportFilter;
-    const matchesLevel = levelFilter === 'all' || athlete.level === levelFilter;
-    const matchesRegion = regionFilter === 'all' || athlete.region === regionFilter;
-    
-    return matchesSearch && matchesSport && matchesLevel && matchesRegion;
-  });
+  // Fix: handle empty sponsors array and missing user.id
+  // Always refetch sponsor after login/logout
+  const [currentSponsor, setCurrentSponsor] = useState<any>(null);
+  const [sponsorNeedsCreation, setSponsorNeedsCreation] = useState(false);
+  React.useEffect(() => {
+    const userId = user?._id || user?.id || user?.userId;
+    if (Array.isArray(sponsors) && sponsors.length > 0 && userId) {
+      const foundSponsor = sponsors.find((s: any) => s.userId === userId);
+      if (foundSponsor) {
+        setCurrentSponsor(foundSponsor);
+        setSponsorNeedsCreation(false);
+      } else {
+        setCurrentSponsor(null);
+        setSponsorNeedsCreation(true);
+      }
+    } else {
+      setCurrentSponsor(null);
+      setSponsorNeedsCreation(true);
+    }
+  }, [user, sponsors]);
+  // Debug: log sponsors and user
+  // console.log('Sponsors:', sponsors);
+  // console.log('User:', user);
 
-  const uniqueSports = [...new Set(athletes.map(a => a.sport))];
-  const uniqueRegions = [...new Set(athletes.map(a => a.region))];
+  const filteredAthletes = Array.isArray(athletes)
+    ? athletes.filter(athlete => {
+      const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        athlete.region.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSport = sportFilter === 'all' || athlete.sport === sportFilter;
+      const matchesLevel = levelFilter === 'all' || athlete.level === levelFilter;
+      const matchesRegion = regionFilter === 'all' || athlete.region === regionFilter;
+      return matchesSearch && matchesSport && matchesLevel && matchesRegion;
+    })
+    : [];
+
+  const uniqueSports = Array.isArray(athletes)
+    ? [...new Set(athletes.map(a => a.sport))]
+    : [];
+
+  const uniqueRegions = Array.isArray(athletes)
+    ? [...new Set(athletes.map(a => a.region))]
+    : [];
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -45,10 +78,40 @@ const DiscoverAthletes: React.FC = () => {
     }
   };
 
-  const handleSponsorAthlete = (athleteId: string) => {
-    // This would typically open a sponsorship form or modal
-    alert(`Sponsorship request sent for athlete ID: ${athleteId}`);
-  };
+  React.useEffect(() => {
+    const fetchData = async () => {
+      // Debug: log raw athletes array to inspect properties after login/logout
+      console.log('Raw athletes:', athletes);
+      // Fetch users
+      const usersRes = await fetch('/api/user');
+      const usersData = await usersRes.json();
+      // Merge athletes into users array for email lookup
+      // Type assertion: assume athletes may have email
+      type AthleteWithEmail = typeof athletes[number] & { email?: string; contactEmail?: string; userEmail?: string };
+      const athleteUsers = Array.isArray(athletes)
+        ? (athletes as AthleteWithEmail[])
+            .filter((a: AthleteWithEmail) => !!(a.email || a.contactEmail || a.userEmail))
+            .map((a: AthleteWithEmail) => ({
+              _id: a.id || a._id,
+              name: a.name,
+              email: a.email || a.contactEmail || a.userEmail,
+              role: 'athlete',
+            }))
+        : [];
+      // Merge and deduplicate by name
+      const mergedUsers = [...usersData, ...athleteUsers].reduce((acc, curr) => {
+        if (!acc.some((u: any) => u.name === curr.name)) {
+          acc.push(curr);
+        }
+        return acc;
+      }, []);
+      // Only keep athletes in the users array
+      const athleteOnlyUsers = mergedUsers.filter(u => u.role === 'athlete');
+  setUsers(athleteOnlyUsers);
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -84,9 +147,9 @@ const DiscoverAthletes: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All Sports</option>
-                {uniqueSports.map(sport => (
-                  <option key={sport} value={sport}>{sport}</option>
-                ))}
+                      {uniqueSports.map((sport, idx) => (
+                        <option key={sport + '-' + idx} value={sport}>{sport}</option>
+                      ))}
               </select>
             </div>
 
@@ -112,9 +175,9 @@ const DiscoverAthletes: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All Regions</option>
-                {uniqueRegions.map(region => (
-                  <option key={region} value={region}>{region}</option>
-                ))}
+                  {uniqueRegions.map((region, idx) => (
+                    <option key={region + '-' + idx} value={region}>{region}</option>
+                  ))}
               </select>
             </div>
           </div>
@@ -122,8 +185,8 @@ const DiscoverAthletes: React.FC = () => {
 
         {/* Athletes Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAthletes.map((athlete) => (
-            <div key={athlete.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            {filteredAthletes.map((athlete, idx) => (
+              <div key={athlete.id || athlete.name + '-' + idx} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="p-6">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -168,9 +231,9 @@ const DiscoverAthletes: React.FC = () => {
                     Achievements ({athlete.badges.length})
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {athlete.badges.slice(0, 3).map((badge) => (
-                      <div 
-                        key={badge.id} 
+                    {athlete.badges.slice(0, 3).map((badge, bidx) => (
+                      <div
+                        key={badge.id || badge.name + '-' + bidx}
                         className={`flex items-center space-x-1 px-2 py-1 rounded-full border-2 ${getBadgeRarityColor(badge.rarity)} bg-white`}
                         title={badge.description}
                       >
@@ -218,12 +281,11 @@ const DiscoverAthletes: React.FC = () => {
                       <h4 className="text-sm font-medium text-yellow-800">Sponsorship Potential</h4>
                       <div className="flex items-center mt-1">
                         {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`h-3 w-3 ${
-                              i < Math.min(athlete.badges.length, 5) ? 'text-yellow-500 fill-current' : 'text-gray-300'
-                            }`} 
-                          />
+                            <Star
+                              key={'star-' + i + '-' + athlete.id}
+                              className={`h-3 w-3 ${i < Math.min(athlete.badges.length, 5) ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                                }`}
+                            />
                         ))}
                       </div>
                     </div>
@@ -233,17 +295,14 @@ const DiscoverAthletes: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Action Button */}
-                <div className="flex space-x-2">
+                {/* Only Sponsor Now Button */}
+                <div className="flex">
                   <button
-                    onClick={() => handleSponsorAthlete(athlete.id)}
+                    onClick={() => setTopUpPopup({ show: true, athleteName: athlete.name, confirmed: false })}
                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center"
                   >
                     <DollarSign className="h-4 w-4 mr-1" />
                     Sponsor Now
-                  </button>
-                  <button className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm">
-                    View Profile
                   </button>
                 </div>
               </div>
@@ -251,6 +310,103 @@ const DiscoverAthletes: React.FC = () => {
           ))}
         </div>
 
+        {/* Top-Up Popup */}{topUpPopup.show && (
+          <div
+            style={{
+              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+              background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50
+            }}
+            onClick={() => {
+              if (topUpPopup.confirmed) {
+                setTopUpPopup({ show: false, athleteName: null, confirmed: false });
+              }
+            }}
+          >
+            <div
+              style={{
+                background: '#fff', padding: 24, borderRadius: 8, minWidth: 300, textAlign: 'center', boxShadow: '0 2px 16px rgba(0,0,0,0.15)'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {!topUpPopup.confirmed ? (
+                <>
+                  <p className="mb-4 text-gray-800">
+                    Sponsor <b>{topUpPopup.athleteName}</b> to help them reach new heights!
+                  </p>
+                  <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded mr-2 hover:bg-blue-700"
+                    onClick={async () => {
+                      let sponsorToUse = currentSponsor;
+                      // Only create sponsor if not found
+                      if (sponsorNeedsCreation && !currentSponsor) {
+                        const sponsorPayload = {
+                          user: user?._id,
+                          name: user?.name,
+                          contactEmail: user?.email,
+                        };
+                        const sponsorRes = await fetch('/api/sponsor', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(sponsorPayload),
+                        });
+                        if (sponsorRes.ok) {
+                          sponsorToUse = await sponsorRes.json();
+                          setCurrentSponsor(sponsorToUse);
+                          setSponsorNeedsCreation(false);
+                        } else {
+                          alert('Failed to create sponsor.');
+                          return;
+                        }
+                      }
+                      if (!sponsorToUse) {
+                        alert('No sponsor found.');
+                        return;
+                      }
+                      // Debug: log only athlete users and athleteName
+                      const athleteUsers = users?.filter((u: any) => u.role === 'athlete');
+                      console.log('Athlete Users:', athleteUsers);
+                      console.log('AthleteName:', topUpPopup.athleteName);
+                      // Find athlete user by name (case-insensitive)
+                      const userAthlete = athleteUsers?.find(u =>
+                        (u as any).name?.toLowerCase() === topUpPopup.athleteName?.toLowerCase()
+                      );
+                      if (!userAthlete) {
+                        alert('No athlete user found.');
+                        return;
+                      }
+                      console.log('Sending sponsorship mail...', userAthlete.email, sponsorToUse.name);
+                      const response = await fetch('/api/sponsor/sendSponsorshipMail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          athleteEmail: userAthlete.email,
+                          sponsorName: sponsorToUse.name,
+                        }),
+                      });
+                      const result = await response.json();
+                      if (response.ok) {
+                        setMailStatus('Sponsorship mail sent successfully!');
+                      } else {
+                        setMailStatus(result.error || 'Failed to send sponsorship mail');
+                      }
+                      setTopUpPopup({ ...topUpPopup, confirmed: true });
+                    }}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+                    onClick={() => setTopUpPopup({ show: false, athleteName: null, confirmed: false })}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <p className="text-green-600 font-semibold text-lg">Sponsorship Confirmed</p>
+              )}
+            </div>
+          </div>
+        )}
         {filteredAthletes.length === 0 && (
           <div className="text-center py-12">
             <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />

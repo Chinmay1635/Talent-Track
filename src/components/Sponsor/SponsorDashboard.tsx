@@ -223,7 +223,7 @@ const SponsorDashboard: React.FC = () => {
                             View Winners
                           </button>
                         )}
-                        {!sponsor?.sponsoredTournaments.includes(tournament.id) && tournament.status === 'upcoming' && (
+                        {Array.isArray(sponsor?.sponsoredTournaments) && !sponsor.sponsoredTournaments.includes(tournament.id) && tournament.status === 'upcoming' && (
                           <button
                             onClick={() => {
                               setSelectedTournament(tournament.id);
@@ -234,7 +234,7 @@ const SponsorDashboard: React.FC = () => {
                             Sponsor This
                           </button>
                         )}
-                        {sponsor?.sponsoredTournaments.includes(tournament.id) && (
+                        {Array.isArray(sponsor?.sponsoredTournaments) && sponsor.sponsoredTournaments.includes(tournament.id) && (
                           <span className="text-green-600 text-sm font-medium">Sponsored</span>
                         )}
                       </div>
