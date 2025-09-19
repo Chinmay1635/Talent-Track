@@ -31,7 +31,9 @@ const Navbar: React.FC = () => {
         return [
           { href: '/coach/dashboard', label: 'Dashboard' },
           { href: '/coach/athletes', label: 'My Athletes' },
-          { href: '/coach/training-plans', label: 'Training Plans' }
+          { href: '/coach/training-plans', label: 'Training Plans' },
+          { href: '/coach/injury_precaution', label: 'Precaution' }
+
         ];
       case 'academy':
         return [
