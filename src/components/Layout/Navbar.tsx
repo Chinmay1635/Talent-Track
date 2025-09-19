@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
           { href: '/coach/dashboard', label: 'Dashboard' },
           { href: '/coach/athletes', label: 'My Athletes' },
           { href: '/coach/training-plans', label: 'Training Plans' },
-          { href: '/coach/injury_precaution', label: 'Precaution' }
+          { href: '/coach/injuryPrecaution', label: 'Precaution' }
 
         ];
       case 'academy':

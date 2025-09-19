@@ -1,8 +1,23 @@
-import React, { useState } from 'react';
-import { User, Star, MapPin, Award, Briefcase, Phone, Mail, Calendar, Search, Navigation } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Star, MapPin, Award, Briefcase, Phone, Mail, Calendar, Search, Navigation, Play } from 'lucide-react';
 import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
+import { useAuth } from '../../context/AuthContext';
+import { useData } from '../../context/DataContext';
 
 // Type definitions
+interface Video {
+  _id: string;
+  title: string;
+  videoId: string;
+  videoUrl: string;
+  description?: string;
+  createdAt: string;
+  coach: {
+    _id: string;
+    name: string;
+  };
+}
+
 interface Doctor {
   id: string;
   name: string;
@@ -18,6 +33,9 @@ interface Doctor {
 }
 
 const AthleteInjuries: React.FC = () => {
+  const { user } = useAuth();
+  const { athletes } = useData();
+  
   // Mock doctors data with Indian names and numbers
   const mockDoctors: Doctor[] = [
     {
@@ -99,10 +117,56 @@ const AthleteInjuries: React.FC = () => {
       mapLocation: 'Jubilee+Hills+Hyderabad'
     }
   ];
+  
+  // State for videos
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [videosError, setVideosError] = useState('');
+  const [videosLoading, setVideosLoading] = useState(true);
 
+  // State for doctors search
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [specializationFilter, setSpecializationFilter] = useState<string>('all');
   const [doctors] = useState<Doctor[]>(mockDoctors);
+
+  // Fetch all videos from precautionVideos collection
+  useEffect(() => {
+    const fetchAllVideos = async () => {
+      try {
+        setVideosLoading(true);
+        setVideosError('');
+        
+        console.log('Fetching all injury prevention videos...'); // Debug log
+        
+        const response = await fetch('/api/precautionVideos', {
+          method: 'GET',
+          credentials: 'include', // Automatically sends cookies (including token)
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('API Response status:', response.status); // Debug log
+        const data = await response.json();
+        console.log('API Response data:', data); // Debug log
+        
+        if (data.success) {
+          setVideos(data.data);
+          console.log('Successfully loaded', data.data.length, 'videos'); // Debug log
+        } else {
+          setVideosError(data.error || 'Failed to load videos');
+        }
+      } catch (error) {
+        console.error('Error fetching all videos:', error); // Debug log
+        setVideosError('Failed to load injury prevention videos. Please try again.');
+      } finally {
+        setVideosLoading(false);
+      }
+    };
+    
+    if (user?.role === 'athlete') {
+      fetchAllVideos();
+    }
+  }, [user]); // Removed athletes dependency since we're not filtering by coach
 
   // Get unique specializations for filter
   const specializations = [...new Set(mockDoctors.map(doc => doc.specialization))];
@@ -128,6 +192,77 @@ const AthleteInjuries: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Medical Team Directory</h1>
           <p className="text-gray-600">Find and connect with our specialized doctors</p>
+        </div>
+
+        {/* Injury Prevention Videos Section */}
+        <div className="mb-8">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+              <Play className="h-6 w-6 mr-2 text-red-600" />
+              Injury Prevention Videos
+            </h2>
+            
+            {videosLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading videos...</p>
+              </div>
+            ) : videosError ? (
+              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <Play className="h-5 w-5 text-red-400" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">
+                      Unable to Load Injury Prevention Videos
+                    </h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>{videosError}</p>
+                      <div className="mt-2">
+                        <p className="font-medium">Please try:</p>
+                        <ul className="mt-1 list-disc list-inside">
+                          <li>Refreshing the page</li>
+                          <li>Checking your internet connection</li>
+                          <li>Contacting support if the issue persists</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : videos.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <Play className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-700 mb-2">No videos available</h3>
+                <p className="text-gray-500">No injury prevention videos have been added yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {videos.map(video => (
+                  <div key={video._id} className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="relative pb-[56.25%] h-0">
+                      <iframe
+                        className="absolute top-0 left-0 w-full h-full rounded-t-xl"
+                        src={`https://www.youtube.com/embed/${video.videoId}`}
+                        title="YouTube video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-800">{video.title}</h3>
+                      <p className="text-sm text-gray-500 flex items-center">
+                        <User className="h-4 w-4 mr-1" />
+                        Added by: {video.coach?.name}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Filters */}

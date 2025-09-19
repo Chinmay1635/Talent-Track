@@ -11,7 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         await dbConnect();
         const athletes = await Athlete.find()
-          .populate('user');
+          .populate('user')
+          .populate('coach')
+          .populate('academy');
         res.status(200).json(athletes);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });

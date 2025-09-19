@@ -5,6 +5,7 @@ const tabs = [
   { name: 'Dashboard', route: '/athlete/dashboard' },
   { name: 'Profile', route: '/athlete/profile' },
   { name: 'Tournaments', route: '/athlete/tournaments' },
+  { name: 'Support', route: '/athlete/support' },
   { name: 'Chatbot', route: '/athlete/chatbot' },
 ];
 
