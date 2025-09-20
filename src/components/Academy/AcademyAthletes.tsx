@@ -2,12 +2,13 @@ import React from 'react';
 import { Users, Award, Star, MapPin, Calendar, Trophy } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findAcademyForUser } from '../../utils/userMatching';
 
 const AcademyAthletes: React.FC = () => {
   const { user } = useAuth();
   const { academies, athletes, athleteProgress } = useData();
 
-  const academy = academies.length > 0 ? (academies.find(a => a.userId === user?._id) || academies[0]) : undefined;
+  const academy = academies.length > 0 ? findAcademyForUser(academies, user) : undefined;
   const academyAthletes = athletes.filter(a => a.academyId === academy?.id);
 
   // Add some dummy athletes for demonstration

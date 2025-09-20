@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findAthleteForUser } from '../../utils/userMatching';
 
 interface Video {
   _id: string;
@@ -26,8 +27,8 @@ export default function AthleteSupport() {
     const fetchVideos = async () => {
       try {
         setLoading(true);
-        // Find athlete object for current user
-        const athlete = athletes.find(a => a.userId === user?._id);
+        // Find athlete object for current user with robust matching
+        const athlete = findAthleteForUser(athletes, user);
         const coachId = athlete?.coachId;
         if (!coachId) {
           setError('No coach assigned.');

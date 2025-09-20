@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Users, Award, TrendingUp, Star, BarChart3, X, Plus } from 'lucide-react';
+import { Mail, Phone, Star, ChevronDown, ChevronUp, Award,X,Plus, Users, TrendingUp, BarChart3} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findCoachForUser } from '../../utils/userMatching';
+import AIAnalyticsComponent from '../AI/AIAnalyticsComponent';
+// import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
 const MyAthletes: React.FC = () => {
   const { user } = useAuth();
@@ -10,8 +13,12 @@ const MyAthletes: React.FC = () => {
   // State for badge management modal
   const [selectedAthlete, setSelectedAthlete] = useState<any>(null);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
+  
+  // State for AI analytics
+  const [selectedAthleteForAI, setSelectedAthleteForAI] = useState<any>(null);
+  const [showAIAnalytics, setShowAIAnalytics] = useState(false);
 
-  const coach = coaches.find(c => c.userId === user?._id) || coaches[0];
+  const coach = findCoachForUser(coaches, user);
   const myAthletes = athletes.filter(a => a.coachId === coach?.id);
 
   // Function to generate random progress stats for real athletes
@@ -358,17 +365,29 @@ const MyAthletes: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {getNextLevel(athlete.level) && (
+                        <div className="flex flex-col space-y-2">
+                          {getNextLevel(athlete.level) && (
+                            <button
+                              onClick={() => handleLevelUp(athlete.id, getNextLevel(athlete.level) as any)}
+                              className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors text-xs font-medium"
+                            >
+                              Level Up to {getNextLevel(athlete.level)}
+                            </button>
+                          )}
+                          {!getNextLevel(athlete.level) && (
+                            <span className="text-xs text-gray-500 italic">Max Level</span>
+                          )}
+                          
                           <button
-                            onClick={() => handleLevelUp(athlete.id, getNextLevel(athlete.level) as any)}
-                            className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors text-xs font-medium"
+                            onClick={() => {
+                              setSelectedAthleteForAI(athlete);
+                              setShowAIAnalytics(true);
+                            }}
+                            className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium flex items-center justify-center"
                           >
-                            Level Up to {getNextLevel(athlete.level)}
+                            AI Analytics
                           </button>
-                        )}
-                        {!getNextLevel(athlete.level) && (
-                          <span className="text-xs text-gray-500 italic">Max Level</span>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -569,6 +588,171 @@ const MyAthletes: React.FC = () => {
                 <div className="flex justify-end mt-6 pt-6 border-t border-gray-200">
                   <button
                     onClick={closeBadgeModal}
+                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* AI Analytics Modal */}
+        {showAIAnalytics && selectedAthleteForAI && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                {/* Modal Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                      <BarChart3 className="h-6 w-6 mr-2 text-blue-600" />
+                      AI Performance Analytics
+                    </h2>
+                    <div className="flex items-center space-x-2">
+                      <p className="text-gray-600">{selectedAthleteForAI.name} • {selectedAthleteForAI.level}</p>
+                      {selectedAthleteForAI.isDisabled && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          Person with Disability
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowAIAnalytics(false);
+                      setSelectedAthleteForAI(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 p-1"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                {/* AI Analytics Component */}
+                <AIAnalyticsComponent 
+                  athlete={selectedAthleteForAI} 
+                  trainingSessions={[
+                    // Mock training sessions - in real app this would come from API
+                    {
+                      id: '1',
+                      athleteId: selectedAthleteForAI.id,
+                      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
+                      duration: 90,
+                      exercises: [
+                        {
+                          id: '1',
+                          name: 'Sprint Training',
+                          sets: 5,
+                          reps: 100,
+                          distance: 100, // 100m sprints
+                          time: 30, // 30 seconds per sprint
+                          performanceScore: 85
+                        }
+                      ],
+                      heartRate: {
+                        avg: 155,
+                        max: 185,
+                        zones: {
+                          zone1: 10, // 10% in recovery
+                          zone2: 30, // 30% in aerobic base
+                          zone3: 40, // 40% in aerobic threshold
+                          zone4: 15, // 15% in anaerobic threshold
+                          zone5: 5   // 5% in neuromuscular power
+                        }
+                      },
+                      performance: {
+                        speed: 85,
+                        accuracy: 92,
+                        power: 78,
+                        endurance: 82,
+                        technique: 88
+                      },
+                      fatigue: 6,
+                      notes: 'Good training session, athlete showing improvement in speed and accuracy'
+                    },
+                    {
+                      id: '2',
+                      athleteId: selectedAthleteForAI.id,
+                      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+                      duration: 120,
+                      exercises: [
+                        {
+                          id: '2',
+                          name: 'Competition Simulation',
+                          sets: 3,
+                          reps: 1,
+                          time: 180, // 3 minutes per simulation
+                          performanceScore: 95
+                        }
+                      ],
+                      heartRate: {
+                        avg: 165,
+                        max: 195,
+                        zones: {
+                          zone1: 5,
+                          zone2: 20,
+                          zone3: 35,
+                          zone4: 30,
+                          zone5: 10
+                        }
+                      },
+                      performance: {
+                        speed: 88,
+                        accuracy: 95,
+                        power: 85,
+                        endurance: 90,
+                        technique: 91
+                      },
+                      fatigue: 8,
+                      notes: 'Excellent competition performance, all metrics improved'
+                    },
+                    {
+                      id: '3',
+                      athleteId: selectedAthleteForAI.id,
+                      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Yesterday
+                      duration: 60,
+                      exercises: [
+                        {
+                          id: '3',
+                          name: 'Recovery Training',
+                          sets: 3,
+                          reps: 20,
+                          time: 15, // 15 minutes per set
+                          performanceScore: 75
+                        }
+                      ],
+                      heartRate: {
+                        avg: 135,
+                        max: 155,
+                        zones: {
+                          zone1: 40,
+                          zone2: 45,
+                          zone3: 15,
+                          zone4: 0,
+                          zone5: 0
+                        }
+                      },
+                      performance: {
+                        speed: 70,
+                        accuracy: 88,
+                        power: 60,
+                        endurance: 75,
+                        technique: 85
+                      },
+                      fatigue: 3,
+                      notes: 'Recovery session focused on flexibility and light technique work'
+                    }
+                  ]}
+                />
+
+                {/* Modal Actions */}
+                <div className="flex justify-end mt-6 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      setShowAIAnalytics(false);
+                      setSelectedAthleteForAI(null);
+                    }}
                     className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Close

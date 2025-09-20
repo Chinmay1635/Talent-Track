@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import MyApplicationsList from '../Applications/MyApplicationsList';
 import AcademiesList from '../Applications/AcademiesList';
-
+import { findCoachForUser } from '../../utils/userMatching';
 // Define the application type for state
 interface Application {
   _id: string;
@@ -23,7 +23,7 @@ const CoachDashboard: React.FC = () => {
   const [loadingAcademies, setLoadingAcademies] = React.useState(true);
 
   const coachList = Array.isArray(coaches) ? coaches : [];
-  const coach = coachList.find(c => c.userId === user?._id) || coachList[0];
+  const coach = findCoachForUser(coachList, user);
   const myAthletes = athletes.filter(a => a.coachId === coach?.id);
   const myTrainingPlans = trainingPlans.filter(tp => tp.coachId === coach?.id);
   const myAthleteProgress = athleteProgress.filter(ap => ap.coachId === coach?.id);
@@ -159,10 +159,10 @@ const CoachDashboard: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900">My Athletes</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Training Plan
-                </button>
+                </button> */}
               </div>
 
               <div className="space-y-4">

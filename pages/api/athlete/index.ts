@@ -44,6 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         if (data.age) data.age = Number(data.age);
         if (data.level) data.level = data.level.charAt(0).toUpperCase() + data.level.slice(1).toLowerCase();
+        // Initialize badges as empty array if not provided
+        if (!data.badges) data.badges = [];
         const created = await Athlete.create(data);
         res.status(201).json(created);
     } catch (error) {

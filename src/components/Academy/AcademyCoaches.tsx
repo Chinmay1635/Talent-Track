@@ -2,6 +2,7 @@ import React from 'react';
 import { Award, Users, Star, Calendar, Trophy, Mail, Phone, Trash2, Edit } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findAcademyForUser } from '../../utils/userMatching';
 
 const AcademyCoaches: React.FC = () => {
   const { user } = useAuth();
@@ -12,7 +13,7 @@ const AcademyCoaches: React.FC = () => {
   if (!Array.isArray(coaches)) coaches = [];
   
   // Use _id for MongoDB consistency - find academy for current user
-  const academy = academies.find(a => a.userId === user?._id) || academies[0];
+  const academy = findAcademyForUser(academies, user);
   
   // Filter coaches for the current academy
   const academyCoaches = coaches.filter(c => c.academyId === academy?._id || c.academyId === academy?.id);

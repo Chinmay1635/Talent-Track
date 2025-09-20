@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trophy, MapPin, Calendar, Users, Star, Filter, Search } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
+import { findAthleteForUser } from '../../utils/userMatching';
 import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
 const AthleteTournaments: React.FC = () => {
@@ -15,7 +16,7 @@ const AthleteTournaments: React.FC = () => {
   const [sportFilter, setSportFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const athleteList = Array.isArray(athletes) ? athletes : [];
-  const athlete = athleteList.find(a => a.userId === user?._id) || athleteList[0];
+    const athlete = findAthleteForUser(athletes, user);
   // ...existing code...
   const [registrations, setRegistrations] = useState<any[]>([]);
 
@@ -111,6 +112,16 @@ const AthleteTournaments: React.FC = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (!athlete) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="text-center text-gray-600">
+          No athlete profile is associated with your account. Please contact support or create an athlete profile.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

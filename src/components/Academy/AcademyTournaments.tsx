@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trophy, Calendar, MapPin, Users, Award, Medal, Crown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findAcademyForUser } from '../../utils/userMatching';
 
 const AcademyTournaments: React.FC = () => {
   const { user } = useAuth();
@@ -12,7 +13,7 @@ const AcademyTournaments: React.FC = () => {
   // Defensive: ensure academies is always an array
   const safeAcademies = Array.isArray(academies) ? academies : [];
   const safeTournaments = Array.isArray(tournaments) ? tournaments : [];
-  const academy = safeAcademies.find(a => a.userId === user?._id) || safeAcademies[0];
+  const academy = findAcademyForUser(safeAcademies, user);
   // Use _id for MongoDB consistency
   const academyTournaments = safeTournaments.filter(t => t.academyId === academy?._id || t.academyId === academy?.id);
 

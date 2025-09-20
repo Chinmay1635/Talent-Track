@@ -2,6 +2,7 @@ import React from 'react';
 import { Trophy, Calendar, Star, TrendingUp, Users, Award, Play, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findAthleteForUser } from '../../utils/userMatching';
 import Link from 'next/link';
 import FloatingChatbotButton from '../Layout/FloatingChatbotButton';
 
@@ -30,24 +31,20 @@ const TabButton = ({ name, route }: TabButtonProps) => {
 const AthleteDashboard: React.FC = () => {
   const { user } = useAuth();
   const { athletes, tournaments, trainingPrograms, badges } = useData();
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = React.useState(false);
 
-  // Debug logging
-  // console.log('Current user:', user);
-  // console.log('Available athletes:', athletes);
-  // console.log('Athletes user fields:', athletes.map(a => ({ 
-  //   name: a.name, 
-  //   userId: a.userId, 
-  //   user: (a as any).user,
-  //   _id: a.id || (a as any)._id 
-  // })));
+  // Track when data has initially loaded
+  React.useEffect(() => {
+    if (athletes.length > 0) {
+      setHasInitiallyLoaded(true);
+    }
+  }, [athletes.length]);
 
-  const athlete = athletes.length > 0 ? athletes.find(a => 
-    a.userId === user?._id || 
-    (a as any).user === user?._id || 
-    (a as any).user?._id === user?._id
-  ) : undefined;
-
-  // console.log('Found athlete:', athlete);
+  const athlete = findAthleteForUser(athletes, user);
+  
+  // Show loading state only if we haven't loaded any data yet and user is logged in
+  const isDataLoading = user && !hasInitiallyLoaded && athletes.length === 0;
+  
   const upcomingTournaments = tournaments.filter(t => t.status === 'upcoming').slice(0, 3);
   const recentNews = [
     {
@@ -94,7 +91,7 @@ const AthleteDashboard: React.FC = () => {
         {/* Welcome Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {athlete?.name}! 🏆
+            Welcome back, {athlete?.name || (isDataLoading ? 'Loading...' : user?.name || 'Athlete')}! 🏆
           </h1>
           <p className="text-gray-600">Ready to achieve your sports goals today?</p>
         </div>
@@ -105,7 +102,7 @@ const AthleteDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Current Level</p>
-                <p className="text-2xl font-bold text-blue-600">{athlete?.level}</p>
+                <p className="text-2xl font-bold text-blue-600">{athlete?.level || (isDataLoading ? '...' : 'N/A')}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Star className="h-6 w-6 text-blue-600" />
@@ -117,7 +114,7 @@ const AthleteDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Badges Earned</p>
-                <p className="text-2xl font-bold text-yellow-600">{athlete?.badges.length}</p>
+                <p className="text-2xl font-bold text-yellow-600">{athlete?.badges?.length || 0}</p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                 <Award className="h-6 w-6 text-yellow-600" />
@@ -129,7 +126,7 @@ const AthleteDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Sport</p>
-                <p className="text-lg font-bold text-green-600">{athlete?.sport}</p>
+                <p className="text-lg font-bold text-green-600">{athlete?.sport || (isDataLoading ? '...' : 'N/A')}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <Trophy className="h-6 w-6 text-green-600" />
@@ -141,7 +138,7 @@ const AthleteDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Region</p>
-                <p className="text-lg font-bold text-purple-600">{athlete?.region}</p>
+                <p className="text-lg font-bold text-purple-600">{athlete?.region || (isDataLoading ? '...' : 'N/A')}</p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <MapPin className="h-6 w-6 text-purple-600" />
@@ -267,15 +264,33 @@ const AthleteDashboard: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">My Latest Badges</h2>
               <div className="space-y-3">
-                {athlete?.badges.slice(0, 3).map((badge, index) => (
-                  <div key={badge.id || `badge-${index}`} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="text-2xl">{badge.icon}</div>
+                {isDataLoading ? (
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-2xl">⏳</div>
                     <div>
-                      <h3 className="font-medium text-gray-900">{badge.name}</h3>
-                      <p className="text-sm text-gray-600">{badge.description}</p>
+                      <h3 className="font-medium text-gray-900">Loading badges...</h3>
+                      <p className="text-sm text-gray-600">Please wait</p>
                     </div>
                   </div>
-                ))}
+                ) : athlete?.badges?.length > 0 ? (
+                  athlete.badges.slice(0, 3).map((badge, index) => (
+                    <div key={badge.id || `badge-${index}`} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="text-2xl">{badge.icon}</div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">{badge.name}</h3>
+                        <p className="text-sm text-gray-600">{badge.description}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-2xl">🏅</div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">No badges yet</h3>
+                      <p className="text-sm text-gray-600">Start training to earn your first badge!</p>
+                    </div>
+                  </div>
+                )}
               </div>
               <Link 
                 href="/athlete/profile"

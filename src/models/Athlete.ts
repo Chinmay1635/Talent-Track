@@ -31,7 +31,7 @@ const AthleteSchema: Schema<IAthlete> = new Schema({
   region: { type: String },
   level: { type: String },
   bio: { type: String },
-  badges: [{ type: Schema.Types.ObjectId, ref: 'Badge' }],
+  badges: { type: [{ type: Schema.Types.ObjectId, ref: 'Badge' }], default: [] },
   contactEmail: { type: String },
   academy: { type: Schema.Types.ObjectId, ref: 'Academy' },
   coach: { type: Schema.Types.ObjectId, ref: 'Coach' },

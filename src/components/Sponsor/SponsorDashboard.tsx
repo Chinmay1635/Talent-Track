@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trophy, MapPin, Calendar, Users, Star, Search, DollarSign, Award, Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findSponsorForUser } from '../../utils/userMatching';
 
 const SponsorDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -14,7 +15,7 @@ const SponsorDashboard: React.FC = () => {
   const [sponsorAmount, setSponsorAmount] = useState('');
 
   const sponsor = Array.isArray(sponsors) && sponsors.length > 0
-    ? sponsors.find(s => s.userId === user?._id) || sponsors[0]
+    ? findSponsorForUser(sponsors, user)
     : undefined;
 
   const filteredTournaments = Array.isArray(tournaments)

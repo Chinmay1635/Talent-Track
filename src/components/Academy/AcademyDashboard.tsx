@@ -3,6 +3,7 @@ import CoachSelectDropdown from './CoachSelectDropdown';
 import { Users, Trophy, Plus, Award, Building, Edit, Trash2, UserPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findAcademyForUser } from '../../utils/userMatching';
 import ApplicationsList from '../Applications/ApplicationsList';
 
 // Type fixes for compatibility with MongoDB
@@ -66,7 +67,7 @@ const AcademyDashboard: React.FC = () => {
   // Defensive: ensure academies is always an array
   if (!Array.isArray(academies)) academies = [];
   // Use _id for MongoDB consistency
-  const academy = academies.find(a => a.userId === user?._id) || academies[0];
+  const academy = findAcademyForUser(academies, user);
   const [academyError, setAcademyError] = useState<string | null>(null);
   const academyAthletes = Array.isArray(athletes) ? athletes.filter(a => a.academyId === academy?._id || a.academyId === academy?.id) : [];
   if (!Array.isArray(coaches)) coaches = [];

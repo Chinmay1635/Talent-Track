@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Trophy, Medal, Crown, Award, DollarSign, Calendar, MapPin } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
+import { findSponsorForUser } from '../../utils/userMatching';
 
 const TopPerformers: React.FC = () => {
   const { tournaments, athletes, tournamentWinners, sponsors } = useData();
   const { user } = useAuth();
   const [selectedTournament, setSelectedTournament] = useState('');
 
-  const sponsor = sponsors.find(s => s.userId === user?._id) || sponsors[0];
+  const sponsor = findSponsorForUser(sponsors, user);
   const completedTournaments = Array.isArray(tournaments)
     ? tournaments.filter(t => t.status === 'completed')
     : [];

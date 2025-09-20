@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, Trophy, Calendar, Award, TrendingUp, Target, BookOpen, Star } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findCoachForUser } from '../../utils/userMatching';
 import Link from 'next/link';
 
 const CoachLanding: React.FC = () => {
@@ -9,7 +10,7 @@ const CoachLanding: React.FC = () => {
   const { coaches, athletes, tournaments, trainingPlans } = useData();
 
   const coach = Array.isArray(coaches) && coaches.length > 0
-    ? coaches.find(c => c.userId === user?._id) || coaches[0]
+    ? findCoachForUser(coaches, user)
     : undefined;
 
   const myAthletes = Array.isArray(athletes) && coach?.id

@@ -2,13 +2,14 @@ import React from 'react';
 import { Building, Users, Trophy, Award, MapPin, Calendar, Star, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findAcademyForUser } from '../../utils/userMatching';
 import Link from 'next/link';
 
 const AcademyLanding: React.FC = () => {
   const { user } = useAuth();
   const { academies, athletes, coaches, tournaments } = useData();
 
-  const academy = academies.find(a => a.userId === user?._id) || academies[0];
+  const academy = findAcademyForUser(academies, user);
   const academyAthletes = athletes.filter(a => a.academyId === academy?.id);
   const academyCoaches = coaches.filter(c => c.academyId === academy?.id);
   const academyTournaments = tournaments.filter(t => t.academyId === academy?.id);

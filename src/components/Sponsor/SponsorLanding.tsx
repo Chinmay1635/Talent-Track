@@ -2,13 +2,14 @@ import React from 'react';
 import { DollarSign, Trophy, Users, Target, TrendingUp, Award, Star, Calendar } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { findSponsorForUser } from '../../utils/userMatching';
 import Link from 'next/link';
 
 const SponsorLanding: React.FC = () => {
   const { user } = useAuth();
   const { sponsors, tournaments, athletes, tournamentWinners } = useData();
 
-  const sponsor = sponsors.find(s => s.userId === user?._id) || sponsors[0];
+  const sponsor = findSponsorForUser(sponsors, user);
   const sponsoredTournaments = Array.isArray(tournaments)
     ? tournaments.filter(t => sponsor?.sponsoredTournaments.includes(t.id))
     : [];
