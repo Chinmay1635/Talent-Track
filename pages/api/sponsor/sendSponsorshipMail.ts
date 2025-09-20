@@ -40,8 +40,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const raw = makeBody(
     athleteEmail,
     process.env.EMAIL_USER,
-    'You have been sponsored!',
-    `Congratulations! You have been sponsored by ${sponsorName}.`
+  `Congratulations! You have been sponsored by ${sponsorName}.`,
+  `🌟 Congratulations On your Spnsership! 🌟
+
+We've been incredibly impressed with your dedication and performance! Your hard work is paying off, and we're excited to support you on your journey to greatness.
+
+Keep pushing your limits and chasing your dreams! Remember, every champion was once a contender who refused to give up. We believe in you and can't wait to see what you'll achieve next!
+
+Let's make this season your best one yet! 🏆💪
+
+With excitement for your future,
+The Sponsership Team`
   );
 
   try {

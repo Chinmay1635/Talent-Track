@@ -31,7 +31,23 @@ const AthleteDashboard: React.FC = () => {
   const { user } = useAuth();
   const { athletes, tournaments, trainingPrograms, badges } = useData();
 
-  const athlete = athletes.length > 0 ? (athletes.find(a => a.userId === user?._id) || athletes[0]) : undefined;
+  // Debug logging
+  // console.log('Current user:', user);
+  // console.log('Available athletes:', athletes);
+  // console.log('Athletes user fields:', athletes.map(a => ({ 
+  //   name: a.name, 
+  //   userId: a.userId, 
+  //   user: (a as any).user,
+  //   _id: a.id || (a as any)._id 
+  // })));
+
+  const athlete = athletes.length > 0 ? athletes.find(a => 
+    a.userId === user?._id || 
+    (a as any).user === user?._id || 
+    (a as any).user?._id === user?._id
+  ) : undefined;
+
+  // console.log('Found athlete:', athlete);
   const upcomingTournaments = tournaments.filter(t => t.status === 'upcoming').slice(0, 3);
   const recentNews = [
     {
@@ -205,8 +221,8 @@ const AthleteDashboard: React.FC = () => {
                 Upcoming Tournaments
               </h2>
               <div className="space-y-4">
-                {upcomingTournaments.map((tournament) => (
-                  <div key={tournament.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {upcomingTournaments.map((tournament, index) => (
+                  <div key={tournament.id || tournament._id || `tournament-${index}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
                       <h3 className="font-semibold text-gray-900">{tournament.name}</h3>
                       <p className="text-sm text-gray-600">{tournament.sport} • {tournament.location}</p>
@@ -251,8 +267,8 @@ const AthleteDashboard: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">My Latest Badges</h2>
               <div className="space-y-3">
-                {athlete?.badges.slice(0, 3).map((badge) => (
-                  <div key={badge.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                {athlete?.badges.slice(0, 3).map((badge, index) => (
+                  <div key={badge.id || `badge-${index}`} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                     <div className="text-2xl">{badge.icon}</div>
                     <div>
                       <h3 className="font-medium text-gray-900">{badge.name}</h3>
@@ -273,8 +289,8 @@ const AthleteDashboard: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">Available Training</h2>
               <div className="space-y-3">
-                {trainingPrograms.slice(0, 2).map((program) => (
-                  <div key={program.id} className="p-3 bg-green-50 rounded-lg">
+                {trainingPrograms.slice(0, 2).map((program, index) => (
+                  <div key={program.id || program._id || `program-${index}`} className="p-3 bg-green-50 rounded-lg">
                     <h3 className="font-medium text-green-900">{program.title}</h3>
                     <p className="text-sm text-green-700">{program.providerName}</p>
                     <p className="text-sm text-green-600">{program.fees} • {program.duration} weeks</p>

@@ -53,18 +53,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         level: data.level,
         bio: data.bio,
         contactEmail: data.contactEmail,
-        isDisabled: data.isDisabled === true || data.isDisabled === 'true',
-        disabilityType: data.disabilityType || '',
-        disabilityDescription: data.disabilityDescription || '',
-        accommodationsNeeded: data.accommodationsNeeded || [],
-        medicalCertification: data.medicalCertification || ''
+        isDisabled: data.isDisabled === true || data.isDisabled === 'true'
       };
+
+      // Only set disability fields if athlete is disabled
+      if (updateFields.isDisabled) {
+        updateFields.disabilityType = data.disabilityType || '';
+        updateFields.disabilityDescription = data.disabilityDescription || '';
+        updateFields.accommodationsNeeded = data.accommodationsNeeded || [];
+        updateFields.medicalCertification = data.medicalCertification || '';
+      } else {
+        // When disabled = false, explicitly clear disability fields with valid values
+        updateFields.disabilityType = undefined; // Let MongoDB handle this
+        updateFields.disabilityDescription = '';
+        updateFields.accommodationsNeeded = [];
+        updateFields.medicalCertification = '';
+      }
       
       console.log('Processed data before update:', updateFields);
       
+      let updateOperation;
+      if (updateFields.isDisabled) {
+        // If disabled, set all fields including disability fields
+        updateOperation = { $set: updateFields };
+      } else {
+        // If not disabled, set basic fields and unset disability fields
+        const { disabilityType, ...fieldsToSet } = updateFields;
+        updateOperation = { 
+          $set: fieldsToSet,
+          $unset: { 
+            disabilityType: "" // Remove the field entirely to avoid enum validation
+          }
+        };
+      }
+      
+      console.log('Update operation:', updateOperation);
+      
       const updated = await Athlete.findByIdAndUpdate(
         id, 
-        { $set: updateFields }, 
+        updateOperation, 
         { 
           new: true,
           runValidators: true,
