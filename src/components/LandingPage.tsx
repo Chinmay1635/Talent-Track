@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
-import { 
-  Trophy, 
-  Users, 
-  MapPin, 
-  Star, 
-  Award, 
+import {
+  Trophy,
+  Users,
+  MapPin,
+  Star,
+  Award,
   Target,
   CheckCircle,
   User,
@@ -34,9 +34,9 @@ const fadeIn = {
 
 const staggerChildren = {
   animate: {
-  transition: {
-    staggerChildren: 0.15
-  }
+    transition: {
+      staggerChildren: 0.15
+    }
   }
 };
 
@@ -67,49 +67,49 @@ const LandingPage: React.FC = () => {
       <section className="pt-16 pb-20 bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative">
         {/* Background image with light overlay */}
         <div className="fixed inset-0 z-0 overflow-hidden">
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center opacity-20"
             style={{ backgroundImage: "url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80')" }}
           ></div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div 
+          <motion.div
             initial="initial"
             animate="animate"
             variants={staggerChildren}
             className="text-center"
           >
-            <motion.div 
+            <motion.div
               variants={fadeIn}
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full text-sm font-medium mb-8 shadow-lg border border-blue-500"
             >
-              <Sparkles className="h-4 w-4 mr-2" /> 
+              <Sparkles className="h-4 w-4 mr-2" />
               🏆 TalentTrack Platform
             </motion.div>
-            
-            <motion.h1 
+
+            <motion.h1
               variants={fadeIn}
               className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
             >
-              Connecting Sports 
-              <span className="text-blue-600"> Talent</span> with 
+              Connecting Sports
+              <span className="text-blue-600"> Talent</span> with
               <span className="text-orange-500"> Opportunities</span>
             </motion.h1>
-            
-            <motion.p 
+
+            <motion.p
               variants={fadeIn}
               className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed"
             >
-              A unified platform bridging the gap between talented athletes, sports academies, 
+              A unified platform bridging the gap between talented athletes, sports academies,
               coaches, and sponsors. Empowering athletes from all backgrounds to reach their full potential.
             </motion.p>
-            
-            <motion.div 
+
+            <motion.div
               variants={fadeIn}
               className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             >
-              <Link 
+              <Link
                 href="/sign-up"
                 className="group relative bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center shadow-md border border-blue-500"
               >
@@ -119,8 +119,8 @@ const LandingPage: React.FC = () => {
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
-              
-              <Link 
+
+              <Link
                 href="/sign-in"
                 className="group relative border-2 border-blue-500 text-gray-700 px-8 py-4 rounded-lg font-semibold transition-all duration-300 hover:border-blue-600 hover:text-blue-600"
               >
@@ -130,7 +130,7 @@ const LandingPage: React.FC = () => {
             </motion.div>
 
             {/* Stats */}
-            <motion.div 
+            <motion.div
               variants={fadeIn}
               className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto"
             >
@@ -140,10 +140,10 @@ const LandingPage: React.FC = () => {
                 { value: "5K+", label: "Tournaments", color: "text-green-500" },
                 { value: "100+", label: "Sponsors", color: "text-purple-500" },
               ].map((stat, index) => (
-                <motion.div 
-                  key={index} 
+                <motion.div
+                  key={index}
                   whileHover={{ scale: 1.05, y: -5 }}
-                  className="text-center p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-blue-200 hover:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                  className="text-center p-4 bg-white rounded-xl border border-blue-200 hover:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-md"
                 >
                   <div className={`text-3xl font-bold ${stat.color} mb-2`}>{stat.value}</div>
                   <div className="text-gray-600 font-medium">{stat.label}</div>
@@ -154,13 +154,12 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Image Carousel Section */}
-      
-      
+
+
       {/* Features Section */}
-      <section ref={sectionRefs[2]} className="py-20 bg-gray-50">
+      <section ref={sectionRefs[2]} className="py-20 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={inViewEffects[2] ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7 }}
@@ -174,14 +173,14 @@ const LandingPage: React.FC = () => {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={inViewEffects[2] ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2 }}
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
             {/* Athletes */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -10 }}
               className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-blue-200"
             >
@@ -198,7 +197,7 @@ const LandingPage: React.FC = () => {
             </motion.div>
 
             {/* Academies */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -10 }}
               className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-blue-200"
             >
@@ -215,9 +214,9 @@ const LandingPage: React.FC = () => {
             </motion.div>
 
             {/* Coaches */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -10 }}
-              className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-blue-200"
+              className="bg-white !opacity-100 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-blue-200"
             >
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4 border border-yellow-200">
                 <Target className="h-6 w-6 text-yellow-600" />
@@ -232,7 +231,7 @@ const LandingPage: React.FC = () => {
             </motion.div>
 
             {/* Sponsors */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -10 }}
               className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-blue-200"
             >
@@ -252,9 +251,9 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Gamification Section */}
-      <section ref={sectionRefs[3]} className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
+      <section ref={sectionRefs[3]} className="py-20 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={inViewEffects[3] ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7 }}
@@ -268,13 +267,13 @@ const LandingPage: React.FC = () => {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={inViewEffects[3] ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2 }}
             className="grid md:grid-cols-3 gap-8"
           >
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 2 }}
               className="bg-white p-8 rounded-xl shadow-sm text-center hover:shadow-md transition-all duration-300 border border-blue-200"
             >
@@ -285,7 +284,7 @@ const LandingPage: React.FC = () => {
               <p className="text-gray-600">Earn badges for tournaments, training milestones, and performance goals</p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: -2 }}
               className="bg-white p-8 rounded-xl shadow-sm text-center hover:shadow-md transition-all duration-300 border border-blue-200"
             >
@@ -296,7 +295,7 @@ const LandingPage: React.FC = () => {
               <p className="text-gray-600">Compete with peers and climb sport-specific rankings</p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 2 }}
               className="bg-white p-8 rounded-xl shadow-sm text-center hover:shadow-md transition-all duration-300 border border-blue-200"
             >
@@ -313,7 +312,7 @@ const LandingPage: React.FC = () => {
       {/* CTA Section */}
       <section ref={sectionRefs[4]} className="py-20 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 40 }}
             animate={inViewEffects[4] ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7 }}
@@ -321,37 +320,37 @@ const LandingPage: React.FC = () => {
           >
             Ready to Transform <span className="text-blue-400">Sports in India</span>?
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 40 }}
             animate={inViewEffects[4] ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto"
           >
-            Join the movement to create equal opportunities for all athletes, 
+            Join the movement to create equal opportunities for all athletes,
             regardless of their background or location.
           </motion.p>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={inViewEffects[4] ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
           >
-            <Link 
+            <Link
               href="/sign-up"
               className="group relative bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 shadow-md border border-blue-500"
             >
               <span className="relative z-10">Join as Athlete</span>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
-            <Link 
+            <Link
               href="/sign-up"
               className="group relative bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 shadow-md border border-orange-500"
             >
               <span className="relative z-10">Register Academy</span>
               <div className="absolute inset-0 bg-gradient-to-r from-orange-700 to-orange-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
-            <Link 
+            <Link
               href="/sign-up"
               className="group relative border-2 border-blue-500 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:border-blue-400"
             >
@@ -360,7 +359,7 @@ const LandingPage: React.FC = () => {
             </Link>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={inViewEffects[4] ? { opacity: 1 } : {}}
             transition={{ duration: 0.7, delay: 0.3 }}
@@ -379,7 +378,7 @@ const LandingPage: React.FC = () => {
               <Trophy className="h-8 w-8 text-blue-400" />
               <span className="text-xl font-bold">TalentTrack</span>
             </div>
-            
+
             <div className="text-gray-400">
               © 2025 TalentTrack. Building the future of sports in India.
             </div>

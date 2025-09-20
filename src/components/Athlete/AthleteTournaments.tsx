@@ -124,7 +124,7 @@ const AthleteTournaments: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen  py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -133,7 +133,7 @@ const AthleteTournaments: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-blue-400">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -150,7 +150,7 @@ const AthleteTournaments: React.FC = () => {
             </div>
 
             {/* Sport Filter */}
-            <div className="md:w-48">
+            <div className="md:w-48 ">
               <select
                 value={sportFilter}
                 onChange={(e) => setSportFilter(e.target.value)}
@@ -164,7 +164,7 @@ const AthleteTournaments: React.FC = () => {
             </div>
 
             {/* Level Filter */}
-            <div className="md:w-48">
+            <div className="md:w-48 " >
               <select
                 value={levelFilter}
                 onChange={(e) => setLevelFilter(e.target.value)}
@@ -182,7 +182,7 @@ const AthleteTournaments: React.FC = () => {
         {/* Tournament Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTournaments.map((tournament) => (
-            <div key={tournament._id || tournament.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div key={tournament._id || tournament.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow   border border-blue-400">
               <div className="p-6">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">

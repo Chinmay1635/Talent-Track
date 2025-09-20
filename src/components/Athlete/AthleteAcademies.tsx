@@ -22,7 +22,7 @@ const AthleteAcademies: React.FC = () => {
   const uniqueStates = [...new Set(academies.map(a => a.state))];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
       <FloatingChatbotButton />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
