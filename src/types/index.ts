@@ -19,6 +19,12 @@ export interface Athlete {
   profileImage?: string;
   age?: number;
   bio?: string;
+  // Disability Information
+  isDisabled?: boolean;
+  disabilityType?: 'Physical Disability' | 'Visual Impairment' | 'Hearing Impairment' | 'Intellectual Disability' | 'Mental Health Condition' | 'Neurological Condition' | 'Chronic Illness' | 'Multiple Disabilities' | 'Other';
+  disabilityDescription?: string;
+  accommodationsNeeded?: string[];
+  medicalCertification?: string;
 }
 
 export interface Coach {

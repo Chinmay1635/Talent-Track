@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Athlete, Coach, Academy, Tournament, Badge, TrainingPlan, Notification } from '../types';
 import { Sponsor, TrainingProvider, TrainingProgram, AthleteProgress, TournamentWinner } from '../types';
-// Removed sampleData imports. Data will be fetched from backend APIs.
+// Data will be fetched from backend APIs only
 
 interface DataContextType {
   athletes: (Athlete & { id?: string; _id?: string })[];
@@ -72,17 +72,40 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           fetch('/api/notification'),
           fetch('/api/sponsor'),
         ]);
-        setAthletes(await athletesRes.json());
-        setCoaches(await coachesRes.json());
-        setAcademies(await academiesRes.json());
-        setTournaments(await tournamentsRes.json());
-        setBadges(await badgesRes.json());
-        setTrainingPlans(await trainingPlansRes.json());
-        setNotifications(await notificationsRes.json());
-        setSponsors(await sponsorsRes.json());
-        // TODO: Add fetches for trainingProviders, trainingPrograms, athleteProgress, tournamentWinners if endpoints exist
+        
+        if (athletesRes.ok) {
+          const apiAthletes = await athletesRes.json();
+          setAthletes(apiAthletes || []);
+        }
+        if (coachesRes.ok) {
+          const apiCoaches = await coachesRes.json();
+          setCoaches(apiCoaches || []);
+        }
+        if (academiesRes.ok) {
+          const apiAcademies = await academiesRes.json();
+          setAcademies(apiAcademies || []);
+        }
+        if (tournamentsRes.ok) {
+          const apiTournaments = await tournamentsRes.json();
+          setTournaments(apiTournaments || []);
+        }
+        if (badgesRes.ok) {
+          const apiBadges = await badgesRes.json();
+          setBadges(apiBadges || []);
+        }
+        if (trainingPlansRes.ok) {
+          const apiTrainingPlans = await trainingPlansRes.json();
+          setTrainingPlans(apiTrainingPlans || []);
+        }
+        if (notificationsRes.ok) {
+          const apiNotifications = await notificationsRes.json();
+          setNotifications(apiNotifications || []);
+        }
+        if (sponsorsRes.ok) {
+          const apiSponsors = await sponsorsRes.json();
+          setSponsors(apiSponsors || []);
+        }
       } catch (err) {
-        // Optionally handle error
         console.error('Failed to fetch initial data:', err);
       }
     };

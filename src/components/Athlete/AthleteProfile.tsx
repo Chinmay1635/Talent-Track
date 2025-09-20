@@ -15,38 +15,105 @@ const AthleteProfile: React.FC = () => {
   // Edit modal state
   const [showEdit, setShowEdit] = useState(false);
   const [form, setForm] = useState({
-    name: athlete?.name || '',
-    age: athlete?.age?.toString() || '',
-    sport: athlete?.sport || '',
-    region: athlete?.region || '',
-    level: athlete?.level || '',
-    bio: athlete?.bio || '',
-    contactEmail: (athlete && 'contactEmail' in athlete ? (athlete as any).contactEmail : '') || '',
+    name: '',
+    age: '',
+    sport: '',
+    region: '',
+    level: '',
+    bio: '',
+    contactEmail: '',
+    // Disability fields
+    isDisabled: false,
+    disabilityType: '',
+    disabilityDescription: '',
+    accommodationsNeeded: '',
+    medicalCertification: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // Function to initialize form with current athlete data
+  const initializeForm = () => {
+    setForm({
+      name: athlete?.name || '',
+      age: athlete?.age?.toString() || '',
+      sport: athlete?.sport || '',
+      region: athlete?.region || '',
+      level: athlete?.level || '',
+      bio: athlete?.bio || '',
+      contactEmail: (athlete && 'contactEmail' in athlete ? (athlete as any).contactEmail : '') || '',
+      // Disability fields
+      isDisabled: athlete?.isDisabled || false,
+      disabilityType: athlete?.disabilityType || '',
+      disabilityDescription: athlete?.disabilityDescription || '',
+      accommodationsNeeded: athlete?.accommodationsNeeded?.join(', ') || '',
+      medicalCertification: athlete?.medicalCertification || '',
+    });
+  };
+
+  // Function to open edit modal with current data
+  const handleEditClick = () => {
+    initializeForm();
+    setShowEdit(true);
+    setError(''); // Clear any previous errors
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setForm({ ...form, [name]: checked });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    // Validate disability fields if isDisabled is true
+    if (form.isDisabled && !form.disabilityType) {
+      setError('Please select a disability type when marking as disabled');
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const payload = { ...form, age: Number(form.age) };
+      const payload = { 
+        ...form, 
+        age: Number(form.age),
+        accommodationsNeeded: form.accommodationsNeeded ? form.accommodationsNeeded.split(',').map(item => item.trim()).filter(item => item.length > 0) : [],
+        // Ensure disability fields are included
+        isDisabled: form.isDisabled,
+        disabilityType: form.isDisabled ? form.disabilityType : '',
+        disabilityDescription: form.isDisabled ? form.disabilityDescription : '',
+        medicalCertification: form.isDisabled ? form.medicalCertification : ''
+      };
+      
+      // console.log('Form submission debug:');
+      // console.log('- Athlete ID:', athlete.id || athlete._id);
+      // console.log('- Submitting payload:', payload);
+      // console.log('- URL:', `/api/athlete/${athlete.id || athlete._id}`);
+      
       const res = await fetch(`/api/athlete/${athlete.id || athlete._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
+      });     
       if (res.ok) {
+        const updatedAthlete = await res.json();
         setShowEdit(false);
         window.location.reload();
       } else {
-        setError('Failed to update profile');
+        const errorData = await res.json();
+        console.error('Update failed:', errorData);
+        setError(`Failed to update profile: ${errorData.details || errorData.error}`);
       }
+    } catch (error) {
+      console.error('Frontend error:', error);
+      setError('Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -113,12 +180,17 @@ const AthleteProfile: React.FC = () => {
                   <Star className="h-4 w-4 mr-1" />
                   {athlete.level}
                 </span>
+                {athlete.isDisabled && (
+                  <span className="ml-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    ♿ Para-Athlete
+                  </span>
+                )}
               </div>
             </div>
             <div className="ml-auto">
               <button
                 className="btn btn-outline-primary"
-                onClick={() => setShowEdit(true)}
+                onClick={handleEditClick}
               >Edit Profile</button>
             </div>
           </div>
@@ -131,23 +203,25 @@ const AthleteProfile: React.FC = () => {
 
      {/* Edit Modal */}
 {showEdit && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg relative">
-      {/* Close Button */}
-      <button
-        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
-        onClick={() => setShowEdit(false)}
-      >
-        &times;
-      </button>
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+    <div className="bg-white rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] flex flex-col relative">
+      {/* Fixed Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-800">
+          Edit Athlete Profile
+        </h2>
+        <button
+          className="text-gray-400 hover:text-gray-700 text-2xl"
+          onClick={() => setShowEdit(false)}
+        >
+          &times;
+        </button>
+      </div>
 
-      {/* Title */}
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Edit Athlete Profile
-      </h2>
-
-      {/* Form */}
-      <form onSubmit={handleEditSubmit} className="space-y-5">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {/* Form */}
+        <form id="edit-athlete-form" onSubmit={handleEditSubmit} className="space-y-5">
         {/* Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -253,22 +327,126 @@ const AthleteProfile: React.FC = () => {
           />
         </div>
 
+        {/* Disability Information Section */}
+        <div className="border-t pt-4 mt-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Accessibility Information</h3>
+          
+          {/* Is Disabled Checkbox */}
+          <div className="mb-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="isDisabled"
+                checked={form.isDisabled}
+                onChange={handleChange}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                I am an athlete with a disability (Para-Athlete)
+              </span>
+            </label>
+          </div>
+
+          {/* Conditional Disability Fields */}
+          {form.isDisabled && (
+            <div className="space-y-4 ml-6 border-l-2 border-blue-200 pl-4">
+              {/* Disability Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Disability Type
+                </label>
+                <select
+                  name="disabilityType"
+                  value={form.disabilityType}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  required={form.isDisabled}
+                >
+                  <option value="">Select disability type</option>
+                  <option value="Physical Disability">Physical Disability</option>
+                  <option value="Visual Impairment">Visual Impairment</option>
+                  <option value="Hearing Impairment">Hearing Impairment</option>
+                  <option value="Intellectual Disability">Intellectual Disability</option>
+                  <option value="Mental Health Condition">Mental Health Condition</option>
+                  <option value="Neurological Condition">Neurological Condition</option>
+                  <option value="Chronic Illness">Chronic Illness</option>
+                  <option value="Multiple Disabilities">Multiple Disabilities</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* Disability Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Disability Description
+                </label>
+                <textarea
+                  name="disabilityDescription"
+                  placeholder="Describe your disability and how it affects your athletic performance"
+                  value={form.disabilityDescription}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  rows={3}
+                />
+              </div>
+
+              {/* Accommodations Needed */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Accommodations Needed
+                </label>
+                <input
+                  name="accommodationsNeeded"
+                  placeholder="List accommodations needed (comma-separated)"
+                  value={form.accommodationsNeeded}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Example: Sign language interpreter, Wheelchair accessible facilities, Audio descriptions
+                </p>
+              </div>
+
+              {/* Medical Certification */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Medical Certification/Reference Number
+                </label>
+                <input
+                  name="medicalCertification"
+                  placeholder="Medical certificate number or reference"
+                  value={form.medicalCertification}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Official medical certification or classification number if available
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Error Message */}
         {error && (
           <p className="text-red-500 text-sm">{error}</p>
         )}
+        </form>
+      </div>
 
-        {/* Submit */}
+      {/* Fixed Footer with Submit Button */}
+      <div className="border-t border-gray-200 p-6">
         <div className="flex justify-end">
           <button
             type="submit"
+            form="edit-athlete-form"
             className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Saving..." : "Save Changes"}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 )}
@@ -392,8 +570,61 @@ const AthleteProfile: React.FC = () => {
                   <span className="text-gray-600">Region</span>
                   <span className="font-semibold text-gray-900">{athlete.region}</span>
                 </div>
+                {athlete.isDisabled && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Para-Athlete</span>
+                    <span className="font-semibold text-blue-600">Yes</span>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Accessibility Information */}
+            {athlete.isDisabled && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                  <span className="mr-2">♿</span>
+                  Accessibility Information
+                </h2>
+                
+                <div className="space-y-3">
+                  {athlete.disabilityType && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">Disability Type</h3>
+                      <p className="text-gray-600 text-sm">{athlete.disabilityType}</p>
+                    </div>
+                  )}
+                  
+                  {athlete.disabilityDescription && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">Description</h3>
+                      <p className="text-gray-600 text-sm">{athlete.disabilityDescription}</p>
+                    </div>
+                  )}
+                  
+                  {athlete.accommodationsNeeded && athlete.accommodationsNeeded.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">Accommodations Needed</h3>
+                      <ul className="text-gray-600 text-sm space-y-1">
+                        {athlete.accommodationsNeeded.map((accommodation, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="mr-2">•</span>
+                            {accommodation}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {athlete.medicalCertification && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">Medical Certification</h3>
+                      <p className="text-gray-600 text-sm font-mono">{athlete.medicalCertification}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

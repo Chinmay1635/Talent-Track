@@ -39,10 +39,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data.coach = data.coachId;
         delete data.coachId;
       }
-      const updated = await Athlete.findByIdAndUpdate(id, data, { new: true });
+      
+      // Ensure disability fields are properly formatted
+      if (data.accommodationsNeeded && typeof data.accommodationsNeeded === 'string') {
+        data.accommodationsNeeded = data.accommodationsNeeded.split(',').map((item: string) => item.trim()).filter((item: string) => item.length > 0);
+      }
+      
+      // Explicitly handle disability fields to prevent them from being overwritten
+      const updateFields: any = {
+        name: data.name,
+        age: data.age,
+        sport: data.sport,
+        region: data.region,
+        level: data.level,
+        bio: data.bio,
+        contactEmail: data.contactEmail,
+        isDisabled: data.isDisabled === true || data.isDisabled === 'true',
+        disabilityType: data.disabilityType || '',
+        disabilityDescription: data.disabilityDescription || '',
+        accommodationsNeeded: data.accommodationsNeeded || [],
+        medicalCertification: data.medicalCertification || ''
+      };
+      
+      console.log('Processed data before update:', updateFields);
+      
+      const updated = await Athlete.findByIdAndUpdate(
+        id, 
+        { $set: updateFields }, 
+        { 
+          new: true,
+          runValidators: true,
+          strict: false // Allow updates to fields not in schema
+        }
+      );
+      
+      console.log('Update result:', {
+        id: updated._id,
+        name: updated.name,
+        isDisabled: updated.isDisabled,
+        disabilityType: updated.disabilityType,
+        disabilityDescription: updated.disabilityDescription,
+        accommodationsNeeded: updated.accommodationsNeeded,
+        medicalCertification: updated.medicalCertification
+      });
+      
       res.status(200).json(updated);
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('Update error:', error);
+      res.status(500).json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' });
     }
   } else if (method === 'DELETE') {
     try {

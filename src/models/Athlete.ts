@@ -15,6 +15,12 @@ export interface IAthlete extends Document {
   trainingPlans?: mongoose.Types.ObjectId[];
   progress?: mongoose.Types.ObjectId[];
   registrations?: mongoose.Types.ObjectId[];
+  // Disability Information
+  isDisabled?: boolean;
+  disabilityType?: string;
+  disabilityDescription?: string;
+  accommodationsNeeded?: string[];
+  medicalCertification?: string;
   createdAt: Date;
 }
 
@@ -33,6 +39,25 @@ const AthleteSchema: Schema<IAthlete> = new Schema({
   trainingPlans: [{ type: Schema.Types.ObjectId, ref: 'TrainingPlan' }],
   progress: [{ type: Schema.Types.ObjectId, ref: 'Progress' }],
   registrations: [{ type: Schema.Types.ObjectId, ref: 'Registration' }],
+  // Disability Information
+  isDisabled: { type: Boolean, default: false },
+  disabilityType: { 
+    type: String, 
+    enum: [
+      'Physical Disability',
+      'Visual Impairment', 
+      'Hearing Impairment',
+      'Intellectual Disability',
+      'Mental Health Condition',
+      'Neurological Condition',
+      'Chronic Illness',
+      'Multiple Disabilities',
+      'Other'
+    ]
+  },
+  disabilityDescription: { type: String },
+  accommodationsNeeded: [{ type: String }],
+  medicalCertification: { type: String }, // File path or certification number
   createdAt: { type: Date, default: Date.now },
 });
 
