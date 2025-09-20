@@ -82,10 +82,9 @@ const LandingPage: React.FC = () => {
           >
             <motion.div
               variants={fadeIn}
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full text-sm font-medium mb-8 shadow-lg border border-blue-500"
+              className="inline-flex items-center text-white rounded-full text-sm font-medium  shadow-lg "
             >
-              <Sparkles className="h-4 w-4 mr-2" />
-              🏆 TalentTrack Platform
+            
             </motion.div>
 
             <motion.h1
