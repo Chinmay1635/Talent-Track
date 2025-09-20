@@ -75,12 +75,12 @@ const AthleteTraining: React.FC = () => {
       updatedPlan.exercises[exerciseIndex].completed = !currentStatus;
 
       // Update the API
-      const response = await fetch(`/api/training-plan/${planId}`, {
+      const response = await fetch(`/api/trainingPlan`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedPlan),
+        body: JSON.stringify({ _id: planId, ...updatedPlan }),
       });
 
       if (response.ok) {

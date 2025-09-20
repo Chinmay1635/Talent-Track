@@ -69,7 +69,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           fetch('/api/academy'),
           fetch('/api/tournament'),
           fetch('/api/badge'),
-          fetch('/api/training-plan'),
+          fetch('/api/trainingPlan'),
           fetch('/api/notification'),
           fetch('/api/sponsor'),
         ]);

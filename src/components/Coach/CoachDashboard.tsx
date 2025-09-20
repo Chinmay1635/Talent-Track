@@ -22,11 +22,16 @@ const CoachDashboard: React.FC = () => {
   const [academies, setAcademies] = React.useState<any[]>([]);
   const [loadingAcademies, setLoadingAcademies] = React.useState(true);
 
+  // Defensive: ensure all data arrays are valid arrays
   const coachList = Array.isArray(coaches) ? coaches : [];
+  const athletesList = Array.isArray(athletes) ? athletes : [];
+  const trainingPlansList = Array.isArray(trainingPlans) ? trainingPlans : [];
+  const athleteProgressList = Array.isArray(athleteProgress) ? athleteProgress : [];
+  
   const coach = findCoachForUser(coachList, user);
-  const myAthletes = athletes.filter(a => a.coachId === coach?.id);
-  const myTrainingPlans = trainingPlans.filter(tp => tp.coachId === coach?.id);
-  const myAthleteProgress = athleteProgress.filter(ap => ap.coachId === coach?.id);
+  const myAthletes = athletesList.filter(a => a.coachId === coach?.id);
+  const myTrainingPlans = trainingPlansList.filter(tp => tp.coachId === coach?.id);
+  const myAthleteProgress = athleteProgressList.filter(ap => ap.coachId === coach?.id);
 
   React.useEffect(() => {
     if (user?._id) {
@@ -131,7 +136,10 @@ const CoachDashboard: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Badges Awarded</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {myAthletes.reduce((total, athlete) => total + athlete.badges.length, 0)}
+                  {myAthletes.reduce((total, athlete) => {
+                    const badges = Array.isArray(athlete.badges) ? athlete.badges : [];
+                    return total + badges.length;
+                  }, 0)}
                 </p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -249,11 +257,11 @@ const CoachDashboard: React.FC = () => {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">Badges: {athlete.badges.length}</span>
+                        <span className="text-sm text-gray-600">Badges: {Array.isArray(athlete.badges) ? athlete.badges.length : 0}</span>
                         <div className="flex space-x-1">
-                          {athlete.badges.slice(0, 3).map((badge: any, index) => (
+                          {Array.isArray(athlete.badges) ? athlete.badges.slice(0, 3).map((badge: any, index) => (
                             <span key={badge.id || badge._id || index} className="text-sm">{badge.icon}</span>
-                          ))}
+                          )) : null}
                         </div>
                       </div>
 

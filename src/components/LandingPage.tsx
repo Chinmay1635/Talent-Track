@@ -69,7 +69,13 @@ const LandingPage: React.FC = () => {
     useRef(null)
   ];
 
-  const inViewEffects = sectionRefs.map(ref => useInView(ref, { once: true, margin: "-20%" }));
+  // React Hooks must be called at component level, not inside callbacks
+  const inView0 = useInView(sectionRefs[0], { once: true, margin: "-20%" });
+  const inView1 = useInView(sectionRefs[1], { once: true, margin: "-20%" });
+  const inView2 = useInView(sectionRefs[2], { once: true, margin: "-20%" });
+  const inView3 = useInView(sectionRefs[3], { once: true, margin: "-20%" });
+  const inView4 = useInView(sectionRefs[4], { once: true, margin: "-20%" });
+  const inViewEffects = [inView0, inView1, inView2, inView3, inView4];
 
   // Auto-advance carousel
   useEffect(() => {
@@ -323,7 +329,7 @@ const LandingPage: React.FC = () => {
                 <h3 className="text-2xl font-bold mb-4">The Future of Sports Talent Management</h3>
                 <p className="text-blue-200">
                   Our platform combines advanced technology with deep sports industry knowledge to create opportunities for athletes at all levels. 
-                  Watch how we're changing the game for thousands of athletes worldwide.
+                  Watch how we&apos;re changing the game for thousands of athletes worldwide.
                 </p>
               </div>
             </motion.div>

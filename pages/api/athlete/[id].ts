@@ -1,6 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../src/lib/mongodb';
 import Athlete from '../../../src/models/Athlete';
+import User from '../../../src/models/User';
+import Coach from '../../../src/models/Coach';
+import Academy from '../../../src/models/Academy';
+import Badge from '../../../src/models/Badge';
+import TrainingPlan from '../../../src/models/TrainingPlan';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
