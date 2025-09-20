@@ -48,7 +48,7 @@ const Register: React.FC = () => {
       // Navigate based on role
       switch (formData.role) {
         case 'athlete':
-          router.push('/athlete/profile');
+          router.push('/athlete/dashboard');
           break;
         case 'coach':
           router.push('/coach/dashboard');
