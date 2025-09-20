@@ -16,7 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .populate('coach')
         .populate('badges')
         .populate('trainingPlans')
-        .populate('progress')
         .populate('registrations');
       if (!athlete) return res.status(404).json({ error: 'Athlete not found' });
       res.status(200).json(athlete);

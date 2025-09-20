@@ -22,6 +22,7 @@ interface DataContextType {
   sponsorTournament: (tournamentId: string, sponsorId: string, prize: string) => void;
   assignCoachToAthlete: (athleteId: string, coachId: string) => void;
   awardBadgeToAthlete: (athleteId: string, badgeId: string) => void;
+  removeBadgeFromAthlete: (athleteId: string, badgeId: string) => void;
   updateAthleteLevel: (athleteId: string, level: 'Beginner' | 'Intermediate' | 'Pro') => void;
   updateAthleteProgress: (athleteId: string, progress: Partial<AthleteProgress>) => void;
   addTrainingPlan: (plan: Omit<TrainingPlan, 'id'>) => void;
@@ -203,27 +204,94 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const awardBadgeToAthlete = (athleteId: string, badgeId: string) => {
-  const badge = badges.find(b => b.id === badgeId);
+  const awardBadgeToAthlete = async (athleteId: string, badgeId: string) => {
+    const badge = badges.find(b => b.id === badgeId || (b as any)._id === badgeId);
+    console.log('Awarding badge:', { athleteId, badgeId, badge });
     if (!badge) return;
 
-    setAthletes(prev => 
-      prev.map(athlete => 
-        athlete.id === athleteId 
-          ? { ...athlete, badges: [...athlete.badges, badge] }
-          : athlete
-      )
-    );
-    
-    // Add notification
-    addNotification({
-      userId: athleteId,
-      title: 'New Badge Earned!',
-      message: `Congratulations! You've earned the "${badge.name}" badge!`,
-      type: 'badge',
-      read: false,
-      createdAt: new Date().toISOString()
-    });
+    try {
+      // Make API call to add badge
+      const response = await fetch('/api/athlete/badge/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ athleteId, badgeId }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const updatedAthlete = result.athlete;
+        console.log('Badge added successfully:', { athleteId, updatedBadges: updatedAthlete.badges });
+        
+        // Update local state with the athlete data from API response
+        setAthletes(prev => 
+          prev.map(athlete => 
+            (athlete.id === athleteId || (athlete as any)._id === athleteId)
+              ? { ...athlete, badges: updatedAthlete.badges || [] }
+              : athlete
+          )
+        );
+        
+        // Add notification
+        addNotification({
+          userId: athleteId,
+          title: 'New Badge Earned!',
+          message: `Congratulations! You've earned the "${badge.name}" badge!`,
+          type: 'badge',
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+      } else {
+        console.error('Failed to award badge:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error awarding badge:', error);
+    }
+  };
+
+  const removeBadgeFromAthlete = async (athleteId: string, badgeId: string) => {
+    const badge = badges.find(b => b.id === badgeId || (b as any)._id === badgeId);
+    if (!badge) return;
+
+    try {
+      // Make API call to remove badge
+      const response = await fetch('/api/athlete/badge/remove', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ athleteId, badgeId }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const updatedAthlete = result.athlete;
+        
+        // Update local state with the athlete data from API response
+        setAthletes(prev => 
+          prev.map(athlete => 
+            (athlete.id === athleteId || (athlete as any)._id === athleteId)
+              ? { ...athlete, badges: updatedAthlete.badges || [] }
+              : athlete
+          )
+        );
+        
+        // Add notification
+        addNotification({
+          userId: athleteId,
+          title: 'Badge Removed',
+          message: `The "${badge.name}" badge has been removed from your profile.`,
+          type: 'badge',
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+      } else {
+        console.error('Failed to remove badge:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error removing badge:', error);
+    }
   };
 
   const updateAthleteLevel = (athleteId: string, level: 'Beginner' | 'Intermediate' | 'Pro') => {
@@ -375,6 +443,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sponsorTournament,
       assignCoachToAthlete,
       awardBadgeToAthlete,
+      removeBadgeFromAthlete,
       updateAthleteLevel,
       updateAthleteProgress,
       addTrainingPlan,

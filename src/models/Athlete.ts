@@ -13,7 +13,6 @@ export interface IAthlete extends Document {
   academy?: mongoose.Types.ObjectId;
   coach?: mongoose.Types.ObjectId;
   trainingPlans?: mongoose.Types.ObjectId[];
-  progress?: mongoose.Types.ObjectId[];
   registrations?: mongoose.Types.ObjectId[];
   // Disability Information
   isDisabled?: boolean;
@@ -37,7 +36,6 @@ const AthleteSchema: Schema<IAthlete> = new Schema({
   academy: { type: Schema.Types.ObjectId, ref: 'Academy' },
   coach: { type: Schema.Types.ObjectId, ref: 'Coach' },
   trainingPlans: [{ type: Schema.Types.ObjectId, ref: 'TrainingPlan' }],
-  progress: [{ type: Schema.Types.ObjectId, ref: 'Progress' }],
   registrations: [{ type: Schema.Types.ObjectId, ref: 'Registration' }],
   // Disability Information
   isDisabled: { type: Boolean, default: false },

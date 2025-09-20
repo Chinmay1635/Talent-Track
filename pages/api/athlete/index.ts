@@ -13,10 +13,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const athletes = await Athlete.find()
           .populate('user')
           .populate('coach')
-          .populate('academy');
+          .populate('academy')
+          .populate('badges')
+          .populate('trainingPlans');
         res.status(200).json(athletes);
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('Error in /api/athlete GET:', error);
+      res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   } else if (method === 'POST') {
     // Create athlete

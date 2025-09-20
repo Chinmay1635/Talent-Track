@@ -16,7 +16,7 @@ interface Application {
 
 const CoachDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { coaches, athletes, trainingPlans, athleteProgress, awardBadgeToAthlete, updateAthleteLevel, updateAthleteProgress, badges } = useData();
+  const { coaches, athletes, trainingPlans, athleteProgress, updateAthleteLevel, updateAthleteProgress } = useData();
   const [applications, setApplications] = React.useState<Application[]>([]);
   const [loadingApps, setLoadingApps] = React.useState(true);
   const [academies, setAcademies] = React.useState<any[]>([]);
@@ -49,10 +49,6 @@ const CoachDashboard: React.FC = () => {
       })
       .catch(() => setLoadingAcademies(false));
   }, []);
-
-  const handleAwardBadge = (athleteId: string, badgeId: string) => {
-    awardBadgeToAthlete(athleteId, badgeId);
-  };
 
   const handleLevelUp = (athleteId: string, newLevel: 'Beginner' | 'Intermediate' | 'Pro') => {
     updateAthleteLevel(athleteId, newLevel);
@@ -255,29 +251,13 @@ const CoachDashboard: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-600">Badges: {athlete.badges.length}</span>
                         <div className="flex space-x-1">
-                          {athlete.badges.slice(0, 3).map((badge) => (
-                            <span key={badge.id} className="text-sm">{badge.icon}</span>
+                          {athlete.badges.slice(0, 3).map((badge: any, index) => (
+                            <span key={badge.id || badge._id || index} className="text-sm">{badge.icon}</span>
                           ))}
                         </div>
                       </div>
 
                       <div className="flex space-x-2">
-                        {/* Award Badge */}
-                        <select
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              handleAwardBadge(athlete.id, e.target.value);
-                              e.target.value = '';
-                            }
-                          }}
-                          className="text-xs px-2 py-1 border border-gray-300 rounded"
-                        >
-                          <option value="">Award Badge</option>
-                          {badges.filter(b => !athlete.badges.find(ab => ab.id === b.id)).map(badge => (
-                            <option key={badge.id} value={badge.id}>{badge.name}</option>
-                          ))}
-                        </select>
-
                         {/* Level Up */}
                         {getNextLevel(athlete.level) && (
                           <button
