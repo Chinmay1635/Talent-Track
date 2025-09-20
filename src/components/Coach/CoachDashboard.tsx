@@ -257,17 +257,7 @@ const CoachDashboard: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex space-x-2">
-                        {/* Level Up */}
-                        {getNextLevel(athlete.level) && (
-                          <button
-                            onClick={() => handleLevelUp(athlete.id, getNextLevel(athlete.level) as any)}
-                            className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition-colors"
-                          >
-                            Level Up
-                          </button>
-                        )}
-                      </div>
+                      
                     </div>
                   </div>
                 ))}
@@ -325,32 +315,6 @@ const CoachDashboard: React.FC = () => {
               )}
             </div>
 
-            {/* Recent Training Plans */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Recent Training Plans</h2>
-              <div className="space-y-3">
-                {myTrainingPlans.slice(0, 3).map((plan) => (
-                  <div key={plan.id} className="p-3 bg-gray-50 rounded-lg">
-                    <h3 className="font-medium text-gray-900 text-sm">{plan.title}</h3>
-                    <p className="text-xs text-gray-600 mt-1">{plan.duration} weeks</p>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-2 ${
-                      plan.status === 'active' ? 'bg-green-100 text-green-800' :
-                      plan.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {plan.status}
-                    </span>
-                  </div>
-                ))}
-
-                {myTrainingPlans.length === 0 && (
-                  <div className="text-center py-4">
-                    <Calendar className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500 text-sm">No training plans yet.</p>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>

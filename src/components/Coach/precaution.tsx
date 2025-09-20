@@ -232,9 +232,7 @@ export default function YouTubeEmbedder() {
               {error}
             </div>
           )}
-          <p className="text-sm text-gray-500 mt-4">
-            Example URL: https://www.youtube.com/watch?v=dQw4w9WgXcQ
-          </p>
+      
         </div>
         {fetchingVideos ? (
           <div className="text-center py-12 bg-white rounded-xl shadow-md">

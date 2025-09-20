@@ -115,7 +115,7 @@ const LandingPage: React.FC = () => {
         ></div>
         
         {/* Dark overlay for better text contrast */}
-        <div className="absolute inset-0 bg-blue-900/80"></div>
+        <div className='absolute inset-0 bg-gray-800/90'></div>
         
         {/* Animated floating elements */}
         <motion.div 
@@ -165,7 +165,7 @@ const LandingPage: React.FC = () => {
       <div className="relative z-10">
         {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center relative pt-20 pb-24">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/50 via-blue-800/40 to-blue-900/50"></div>
+          {/* <div className="absolute inset-0 bg-gradient-to-b from-blue-900/50 via-blue-800/40 to-blue-900/50"></div> */}
           
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div 
@@ -263,7 +263,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Video Showcase Section */}
-        <section ref={sectionRefs[0]} className="py-24 relative">
+        {/* <section ref={sectionRefs[0]} className="py-24 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               initial={{ opacity: 0, y: 40 }}
@@ -328,7 +328,7 @@ const LandingPage: React.FC = () => {
               </div>
             </motion.div>
           </div>
-        </section>
+        </section> */}
 
         {/* Features Section */}
         <section ref={sectionRefs[2]} className="py-24 relative">
