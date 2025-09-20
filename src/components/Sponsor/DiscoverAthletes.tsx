@@ -298,7 +298,10 @@ const DiscoverAthletes: React.FC = () => {
                 {/* Only Sponsor Now Button */}
                 <div className="flex">
                   <button
-                    onClick={() => setTopUpPopup({ show: true, athleteName: athlete.name, confirmed: false })}
+                    onClick={() => {
+                      setMailStatus(null); // Reset mail status when opening popup
+                      setTopUpPopup({ show: true, athleteName: athlete.name, confirmed: false });
+                    }}
                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center"
                   >
                     <DollarSign className="h-4 w-4 mr-1" />
@@ -319,6 +322,7 @@ const DiscoverAthletes: React.FC = () => {
             onClick={() => {
               if (topUpPopup.confirmed) {
                 setTopUpPopup({ show: false, athleteName: null, confirmed: false });
+                setMailStatus(null); // Reset mail status when closing popup
               }
             }}
           >
@@ -385,30 +389,30 @@ const DiscoverAthletes: React.FC = () => {
                         body: JSON.stringify({
                           athleteEmail: userAthlete.email,
                           sponsorName: sponsorToUse.name,
+                          // Add cheerful and motivating message
+                         
                         }),
                       });
                       const result = await response.json();
                       if (response.ok) {
                         setMailStatus('Sponsorship mail sent successfully!');
+                        setTopUpPopup({ ...topUpPopup, confirmed: true });
                       } else {
                         setMailStatus(result.error || 'Failed to send sponsorship mail');
                       }
-                      setTopUpPopup({ ...topUpPopup, confirmed: true });
                     }}
                   >
                     Confirm
                   </button>
                   <button
                     className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-                    onClick={() => setTopUpPopup({ show: false, athleteName: null, confirmed: false })}
+                    onClick={() => {
+                      setTopUpPopup({ show: false, athleteName: null, confirmed: false });
+                      setMailStatus(null);
+                    }}
                   >
                     Cancel
                   </button>
-                  {mailStatus && (
-                    <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
-                      {mailStatus}
-                    </div>
-                  )}
                 </>
               ) : (
                 <>
